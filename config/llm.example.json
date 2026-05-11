@@ -1,0 +1,35 @@
+{
+  "default_profile": "claude",
+  "profiles": {
+    "claude": {
+      "provider": "anthropic",
+      "base_url": "https://api.anthropic.com",
+      "auth_env": "ANTHROPIC_API_KEY",
+      "model": "claude-opus-4-7",
+      "max_tokens": 8192,
+      "temperature": 0.2,
+      "extra_headers": {
+        "anthropic-version": "2023-06-01"
+      }
+    },
+    "openai": {
+      "provider": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "auth_env": "OPENAI_API_KEY",
+      "model": "gpt-4o",
+      "max_tokens": 8192,
+      "temperature": 0.2,
+      "extra_headers": {}
+    },
+    "ollama": {
+      "provider": "openai",
+      "base_url": "http://localhost:11434/v1",
+      "auth_env": "OLLAMA_API_KEY",
+      "auth_optional": true,
+      "model": "llama3.1:70b",
+      "max_tokens": 4096,
+      "temperature": 0.2,
+      "extra_headers": {}
+    }
+  }
+}
