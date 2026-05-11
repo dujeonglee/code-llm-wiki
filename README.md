@@ -52,11 +52,28 @@ CLAUDE.md           # 에이전트 SOP
 ## 진행 상태
 
 - [x] D1: 스캐폴드 + LLM provider 추상화
-- [ ] D2: 패치 라우터 + 커버리지 인덱스
-- [ ] D3: 위키 생성/업데이트 코어
+- [x] D2: 패치 라우터 + 커버리지 인덱스
+- [x] D3: 위키 생성/업데이트 코어
 - [ ] D4: Annealing 잡
 - [ ] D5: MkDocs 빌드 + Pages 배포
 - [ ] D6: GH Actions cron 통합
 - [ ] D7: LLM 소비 패턴 + E2E
+
+## 데모: mock LLM E2E (API 키 없이)
+
+```bash
+# 1) 페이지 시드
+python -m scripts.update_wiki seed \
+    --page subsystems/mm.md --kind subsystem \
+    --covers 'mm/*.c' 'mm/*.h' --mock-llm
+
+# 2) 가짜 패치로 업데이트
+cat > /tmp/routing.json <<'EOF'
+{ "from": null, "to": "abc1234",
+  "affected_pages": ["subsystems/mm.md"], "uncovered": [], "commits": [] }
+EOF
+python -m scripts.update_wiki update --routing /tmp/routing.json \
+    --mock-llm --kernel-dir /none
+```
 
 자세한 운영 규칙은 [`CLAUDE.md`](./CLAUDE.md) 참조.

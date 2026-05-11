@@ -33,6 +33,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -149,14 +150,130 @@ def affected_pages(coverage: Coverage,
     return sorted(affected), sorted(uncovered)
 
 
-# ---------------------------------------------------------------------------
-# Todo backlog
-# ---------------------------------------------------------------------------
-
 _HEADER = "# Annealing 백로그\n\n"
 _HINT = ("자동 채워집니다. 각 항목은 patch router / `anneal.py`가 추가합니다.\n"
          "해결되면 체크박스를 표시하거나 항목을 지우세요.\n\n")
 
+
+# ---------------------------------------------------------------------------
+# Page front-matter + body
+# ---------------------------------------------------------------------------
+#
+# We parse a tiny subset of YAML (string scalars, ISO dates, null, and string
+# lists either flow [a, b] or block "- item"). Good enough for our schema and
+# avoids a PyYAML dependency. Anything fancier is rejected so the LLM can't
+# sneak unexpected structure in.
+
+_FM_FENCE = "---"
+
+
+def _parse_scalar(s: str) -> Any:
+    s = s.strip()
+    if s == "" or s.lower() in ("null", "~"):
+        return None
+    if (s.startswith('"') and s.endswith('"')) or \
+       (s.startswith("'") and s.endswith("'")):
+        return s[1:-1]
+    return s
+
+
+def parse_front_matter(text: str) -> tuple[dict[str, Any], str]:
+    """Split ``text`` into (front_matter dict, body string).
+
+    If no front matter, returns ({}, text).
+    """
+    if not text.startswith(_FM_FENCE + "\n") and text != _FM_FENCE:
+        return {}, text
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != _FM_FENCE:
+        return {}, text
+    end = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == _FM_FENCE:
+            end = i
+            break
+    if end is None:
+        return {}, text
+    fm: dict[str, Any] = {}
+    current_key: str | None = None
+    for raw in lines[1:end]:
+        if not raw.strip():
+            continue
+        # block-style list item
+        if current_key is not None and raw.lstrip().startswith("- "):
+            item = raw.lstrip()[2:].strip()
+            fm[current_key].append(_parse_scalar(item))
+            continue
+        if ":" not in raw:
+            continue
+        key, _, rest = raw.partition(":")
+        key = key.strip()
+        rest = rest.strip()
+        if rest == "":
+            # next non-empty line(s) starting with '- ' belong here
+            fm[key] = []
+            current_key = key
+            continue
+        # flow list: [a, b, c]
+        if rest.startswith("[") and rest.endswith("]"):
+            inner = rest[1:-1].strip()
+            fm[key] = [_parse_scalar(x) for x in inner.split(",") if x.strip()]
+        else:
+            fm[key] = _parse_scalar(rest)
+        current_key = None
+    body = "\n".join(lines[end + 1:])
+    if body.startswith("\n"):
+        body = body[1:]
+    return fm, body
+
+
+def serialize_front_matter(fm: dict[str, Any]) -> str:
+    """Render a front-matter dict back to the YAML subset we parse."""
+    out = [_FM_FENCE]
+    for k, v in fm.items():
+        if v is None:
+            out.append(f"{k}: null")
+        elif isinstance(v, list):
+            if not v:
+                out.append(f"{k}: []")
+            else:
+                out.append(f"{k}:")
+                for item in v:
+                    out.append(f"  - {item}")
+        else:
+            s = str(v)
+            # Quote if it contains characters that would confuse a re-parse.
+            if any(c in s for c in ":#") or s.strip() != s:
+                s = '"' + s.replace('"', '\\"') + '"'
+            out.append(f"{k}: {s}")
+    out.append(_FM_FENCE)
+    return "\n".join(out) + "\n"
+
+
+def serialize_page(fm: dict[str, Any], body: str) -> str:
+    body = body if body.endswith("\n") else body + "\n"
+    return serialize_front_matter(fm) + "\n" + body
+
+
+def now_iso() -> str:
+    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def extract_markdown_block(response: str) -> str:
+    """Pull the inner content of the first ```markdown ... ``` fence in an
+    LLM response. Falls back to the whole response stripped of any trailing
+    explanation if no fence is present.
+    """
+    fence = re.search(r"```(?:markdown|md)?\s*\n(.*?)```", response,
+                      flags=re.DOTALL)
+    if fence:
+        return fence.group(1).rstrip() + "\n"
+    return response.strip() + "\n"
+
+
+# ---------------------------------------------------------------------------
+# Todo backlog
+# ---------------------------------------------------------------------------
 
 def append_todo(tag: str, items: list[str], path: Path | None = None) -> int:
     """Append ``items`` under a ``tag`` heading, deduping against existing
