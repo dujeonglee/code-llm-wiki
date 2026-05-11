@@ -1,0 +1,82 @@
+# MkDocs config — produces a static site for INTERNAL hosting only.
+# No GitHub Pages workflow. Build with `python -m scripts.build_site`, then
+# rsync / scp `site/` to an internal nginx (see README for recipes).
+
+site_name: Linux Kernel LLM Wiki
+site_description: >
+  LLM-maintained code wiki for the Linux kernel, built with the Karpathy
+  LLM-Wiki pattern. Pages are generated and patched by an agent; humans
+  decide which pages exist.
+site_url: ""                  # private hosting; no canonical URL baked in
+use_directory_urls: true
+strict: false                 # set true once content stabilises
+
+docs_dir: wiki
+site_dir: site
+
+# Hide our internal bookkeeping from the rendered site.
+exclude_docs: |
+  _meta/
+
+theme:
+  name: material
+  language: ko
+  features:
+    - navigation.instant      # SPA-style nav, faster on big sites
+    - navigation.tracking
+    - navigation.tabs         # top-level sections as tabs
+    - navigation.sections
+    - navigation.indexes      # subsystems/ -> subsystems/index.md if present
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle: { icon: material/weather-night, name: dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle: { icon: material/weather-sunny, name: light mode }
+  icon:
+    repo: fontawesome/brands/git-alt
+
+plugins:
+  - search
+  - roamlinks                 # rewrites [[wiki-link]] / [[path|display]]
+  - mermaid2
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - pymdownx.details
+
+extra:
+  generator: false            # remove "Made with Material for MkDocs"
+
+# nav: intentionally unset — MkDocs auto-generates it from the directory
+# tree. Once content stabilises, pin a hand-curated nav here.

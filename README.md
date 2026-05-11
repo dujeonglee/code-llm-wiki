@@ -33,8 +33,8 @@ CLAUDE.md           # 에이전트 SOP (LLM 운영 규칙)
 - [x] D2: 패치 라우터 + 커버리지 인덱스
 - [x] D3: 위키 생성/업데이트 코어
 - [x] D4: Annealing 잡
-- [ ] D5: MkDocs 빌드 + Pages 배포
-- [ ] D6: GH Actions cron 통합
+- [x] D5: MkDocs 빌드 (사내 호스팅 전용)
+- [ ] D6: GH Actions cron + 사내 배포
 - [ ] D7: LLM 소비 패턴 + E2E
 
 ---
@@ -213,6 +213,9 @@ python -m scripts.update_wiki seed \
 | 패치 → 페이지 갱신 | `python -m scripts.update_wiki update --routing r.json` |
 | Annealing 점검 | `python -m scripts.anneal scan` |
 | Annealing 수리 | `python -m scripts.anneal run --budget N` |
+| 빌드 preflight | `python -m scripts.build_site --preflight` |
+| 정적 사이트 빌드 | `python -m scripts.build_site [--clean] [--strict]` |
+| 로컬 미리보기 | `python -m scripts.build_site --serve` |
 | 단위 테스트 | `python -m unittest discover -s tests` |
 
 공통 플래그: `--mock-llm`(키 불요 모의 응답), `--dry-run`(파일 쓰지 않음), `--profile NAME`(LLM 프로필 선택), `--kernel-dir PATH`(커널 트리 위치 override).
@@ -241,6 +244,100 @@ python -m scripts.anneal run --budget 3 --mock-llm --kernel-dir /none
 ```
 
 생성된 `wiki/subsystems/mm.md`와 `wiki/_meta/coverage.json` 변화를 확인.
+
+---
+
+---
+
+## 정적 사이트 빌드와 **사내 호스팅** (D5)
+
+이 프로젝트는 **GitHub Pages를 쓰지 않습니다.** 빌드는 평범한 MkDocs Material
+정적 사이트(`site/` 디렉토리)를 만들고, 그 다음 사내 웹서버로 배포합니다.
+
+### 빌드 환경 준비 (한 번만)
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements-docs.txt
+```
+
+`requirements-docs.txt`에 든 것:
+- `mkdocs-material` — 테마 + 검색
+- `mkdocs-roamlinks-plugin` — `[[wiki-link]]` → markdown 링크 변환
+- `mkdocs-mermaid2-plugin` — Mermaid 다이어그램 fence
+- `pymdown-extensions` — 코드 하이라이트·superfences·tabs
+
+### 빌드 명령
+
+```bash
+# preflight만 (mkdocs 설치 없이도 동작) — front-matter, 끊긴 링크 점검
+python -m scripts.build_site --preflight
+
+# 정적 사이트 빌드 → site/
+python -m scripts.build_site --clean                # 매 빌드 깨끗하게
+python -m scripts.build_site --strict               # MkDocs 경고도 에러 처리
+
+# 로컬 미리보기 (라이브 리로드)
+python -m scripts.build_site --serve --bind 0.0.0.0:8000
+```
+
+빌드 산출물 `site/`는 `.gitignore`에 포함되어 있어 커밋되지 않습니다.
+
+### 사내 호스팅 배포 레시피
+
+`site/`는 표준 정적 HTML 디렉토리이므로 어떤 웹서버든 됩니다.
+
+#### 옵션 A: nginx + rsync (가장 간단)
+
+```bash
+# 빌드 머신에서
+python -m scripts.build_site --clean --strict
+rsync -av --delete site/ deploy@intra:/var/www/llm-wiki/
+```
+
+`/etc/nginx/conf.d/llm-wiki.conf` 최소 예:
+
+```nginx
+server {
+    listen 80;
+    server_name llm-wiki.intra;
+    root /var/www/llm-wiki;
+    index index.html;
+    location / { try_files $uri $uri/ $uri.html =404; }
+    gzip on; gzip_types text/css application/javascript text/html;
+}
+```
+
+#### 옵션 B: tar.gz 아티팩트 (CI에서 산출, 운영팀이 풀기)
+
+```bash
+python -m scripts.build_site --clean --strict
+tar czf llm-wiki-$(date +%Y%m%d-%H%M).tar.gz -C site .
+# 산출물을 사내 artifact store / S3-호환 / Nexus에 업로드
+```
+
+#### 옵션 C: container
+
+```dockerfile
+# Dockerfile (별도 작성 필요 시)
+FROM nginx:alpine
+COPY site/ /usr/share/nginx/html/
+```
+
+```bash
+python -m scripts.build_site --clean
+docker build -t llm-wiki:$(git rev-parse --short HEAD) .
+docker push registry.intra/llm-wiki:...
+```
+
+### D6에서 자동화 예정
+
+위 빌드+배포는 D6의 GitHub Actions(또는 self-hosted runner)에서 cron으로 돌립니다.
+사내 망 정책에 따라 두 갈래 중 선택:
+
+- **GitHub-호스팅 runner** + 빌드 결과를 artifact로 두고 사내 puller가 가져가기
+- **Self-hosted runner**(사내에 두기) + 빌드 + rsync까지 한 번에
 
 ---
 

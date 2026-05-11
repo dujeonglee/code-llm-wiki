@@ -1,0 +1,15 @@
+# MkDocs build dependencies (D5).
+#
+# Install in a venv on the build machine OR in CI:
+#
+#     python -m venv .venv
+#     . .venv/bin/activate
+#     pip install -r requirements-docs.txt
+#
+# Then:  python -m scripts.build_site           # mkdocs build -> site/
+#        python -m scripts.build_site --serve   # local preview at :8000
+
+mkdocs-material>=9.5,<10
+mkdocs-roamlinks-plugin>=0.3,<1   # [[wiki-link]] -> markdown link rewriting
+mkdocs-mermaid2-plugin>=1.1,<2    # ```mermaid``` fenced diagrams
+pymdown-extensions>=10.7,<11      # superfences, highlight, tabs (Material deps)
