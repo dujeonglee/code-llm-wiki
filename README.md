@@ -54,7 +54,7 @@ CLAUDE.md           # 에이전트 SOP
 - [x] D1: 스캐폴드 + LLM provider 추상화
 - [x] D2: 패치 라우터 + 커버리지 인덱스
 - [x] D3: 위키 생성/업데이트 코어
-- [ ] D4: Annealing 잡
+- [x] D4: Annealing 잡
 - [ ] D5: MkDocs 빌드 + Pages 배포
 - [ ] D6: GH Actions cron 통합
 - [ ] D7: LLM 소비 패턴 + E2E

@@ -320,16 +320,21 @@ def cmd_seed(args: argparse.Namespace) -> int:
 # UPDATE
 # ---------------------------------------------------------------------------
 
-def cmd_update(args: argparse.Namespace) -> int:
-    routing = json.loads(Path(args.routing).read_text())
+def run_update(routing: dict[str, Any], *, kernel_dir: Path,
+               profile: str | None, mock_llm: bool, dry_run: bool,
+               max_diff_bytes: int = 60_000) -> tuple[int, int]:
+    """Programmatic entry point used by ``cmd_update`` and ``anneal.py``.
+
+    Returns ``(written, total)`` — how many pages were actually written and
+    how many were attempted.
+    """
     from_sha = routing.get("from")
     to_sha = routing.get("to")
     pages = routing.get("affected_pages", [])
     if not pages:
         print("[update] routing has no affected_pages; nothing to do")
-        return 0
+        return 0, 0
     cov = Coverage.load()
-    kernel_dir = Path(args.kernel_dir)
 
     written = 0
     for page_rel in pages:
@@ -344,7 +349,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         diff = ""
         if from_sha and to_sha and from_sha != to_sha:
             diff = _git_diff(kernel_dir, from_sha, to_sha, covers,
-                             max_bytes=args.max_diff_bytes)
+                             max_bytes=max_diff_bytes)
 
         user_msg = (
             f"TASK: UPDATE\n"
@@ -357,11 +362,11 @@ def cmd_update(args: argparse.Namespace) -> int:
             + f"\n\nDIFF:\n```diff\n{diff or '(no diff available)'}\n```\n"
         )
 
-        call = _mock_llm if args.mock_llm else llm_client.chat
+        call = _mock_llm if mock_llm else llm_client.chat
         res = call(
             [{"role": "user", "content": user_msg}],
             system=SYSTEM_PROMPT,
-            profile=args.profile,
+            profile=profile,
         )
         page_text = extract_markdown_block(res.text)
         new_fm, new_body = parse_front_matter(page_text)
@@ -379,7 +384,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         merged["last_synced"] = now_iso()
         new_fm = merged
 
-        if args.dry_run:
+        if dry_run:
             print(f"--- {page_rel} ---")
             print(serialize_page(new_fm, new_body))
             continue
@@ -394,11 +399,24 @@ def cmd_update(args: argparse.Namespace) -> int:
         })
         written += 1
 
-    if not args.dry_run and to_sha:
+    if not dry_run and to_sha:
         cov.last_kernel_sha = to_sha
         cov.save()
     print(f"[update] {written}/{len(pages)} pages updated, "
           f"last_kernel_sha := {to_sha}")
+    return written, len(pages)
+
+
+def cmd_update(args: argparse.Namespace) -> int:
+    routing = json.loads(Path(args.routing).read_text())
+    run_update(
+        routing,
+        kernel_dir=Path(args.kernel_dir),
+        profile=args.profile,
+        mock_llm=args.mock_llm,
+        dry_run=args.dry_run,
+        max_diff_bytes=args.max_diff_bytes,
+    )
     return 0
 
 
