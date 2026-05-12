@@ -112,6 +112,7 @@ def get_profile(name: str | None = None) -> dict[str, Any]:
     p.setdefault("max_tokens", 4096)
     p.setdefault("temperature", 0.2)
     p.setdefault("extra_headers", {})
+    p.setdefault("timeout", 120)
     p["_name"] = name
     return p
 
@@ -194,7 +195,7 @@ def _anthropic_chat(profile: dict[str, Any], messages: list[dict[str, Any]],
             }]
         else:
             body["system"] = system
-    raw = _http_post(url, headers, body)
+    raw = _http_post(url, headers, body, timeout=int(profile["timeout"]))
     text = "".join(
         b.get("text", "") for b in raw.get("content", [])
         if b.get("type") == "text"
@@ -227,7 +228,7 @@ def _openai_chat(profile: dict[str, Any], messages: list[dict[str, Any]],
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
-    raw = _http_post(url, headers, body)
+    raw = _http_post(url, headers, body, timeout=int(profile["timeout"]))
     choices = raw.get("choices") or []
     if not choices:
         raise LLMError(f"OpenAI-style response had no choices: {raw}")
