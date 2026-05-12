@@ -1,9 +1,11 @@
 """Build the static HTML site (D5).
 
 Wraps ``mkdocs build`` with a preflight sanity check, so failures point at
-the wiki content rather than at a confusing MkDocs traceback. Designed for
-**internal hosting**: outputs ``site/``; you rsync/scp it to wherever the
-internal web server lives (see README).
+the wiki content rather than at a confusing MkDocs traceback. Output is a
+standalone ``site/`` directory whose pages can be opened directly with a
+browser via ``file://`` (``mkdocs.yml`` sets ``use_directory_urls: false``
+so links resolve as ``foo.html`` rather than ``foo/``). No web server
+needed — just double-click ``site/index.html``.
 
 Preflight checks (run without MkDocs needing to be installed):
 

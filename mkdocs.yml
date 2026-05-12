@@ -1,14 +1,20 @@
-# MkDocs config — produces a static site for INTERNAL hosting only.
-# No GitHub Pages workflow. Build with `python -m scripts.build_site`, then
-# rsync / scp `site/` to an internal nginx (see README for recipes).
+# MkDocs config — produces a STANDALONE static site. After
+# `python -m scripts.build_site`, just double-click site/index.html in
+# your file manager (or `xdg-open site/index.html`) and browse the whole
+# wiki via the file:// protocol. No web server needed.
 
 site_name: Linux Kernel LLM Wiki
 site_description: >
   LLM-maintained code wiki for the Linux kernel, built with the Karpathy
   LLM-Wiki pattern. Pages are generated and patched by an agent; humans
   decide which pages exist.
-site_url: ""                  # private hosting; no canonical URL baked in
-use_directory_urls: true
+site_url: ""                  # local browsing; no canonical URL baked in
+
+# CRITICAL for file:// browsing:
+#   true  -> writes foo/index.html, links use bare "foo/" — needs a server
+#   false -> writes foo.html, links use "foo.html" — opens directly in a
+#            browser via file://
+use_directory_urls: false
 strict: false                 # set true once content stabilises
 
 docs_dir: wiki
