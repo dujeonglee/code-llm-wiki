@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -362,6 +363,69 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
         fm, _ = _meta_io.parse_front_matter(out.read_text())
         self.assertNotIn("freshness", fm)
         self.assertNotIn("stale", str(fm).lower())
+
+
+class SubtreeRoutingTests(_IsolatedWiki, unittest.TestCase):
+    """Cover the per-sub-tree sha resolution: each raw/<top>/ git repo
+    answers for its own pages, not the parent wiki repo."""
+
+    def test_resolve_subtree_single_segment(self):
+        kernel = Path(self.tmp.name) / "raw"
+        (kernel / "foo").mkdir(parents=True)
+        update_wiki.KERNEL_ROOT = kernel
+        self.assertEqual(
+            update_wiki._resolve_subtree(["foo/a.c", "foo/b.h"]),
+            kernel / "foo",
+        )
+
+    def test_resolve_subtree_none_when_covers_span_subtrees(self):
+        kernel = Path(self.tmp.name) / "raw"
+        (kernel / "foo").mkdir(parents=True)
+        (kernel / "bar").mkdir(parents=True)
+        update_wiki.KERNEL_ROOT = kernel
+        self.assertIsNone(
+            update_wiki._resolve_subtree(["foo/a.c", "bar/b.c"])
+        )
+
+    def test_resolve_subtree_none_for_missing_path(self):
+        kernel = Path(self.tmp.name) / "raw"
+        kernel.mkdir()
+        update_wiki.KERNEL_ROOT = kernel
+        self.assertIsNone(
+            update_wiki._resolve_subtree(["no_such_top/a.c"])
+        )
+
+    def test_seed_records_subtree_head_not_parent_repo(self):
+        kernel = Path(self.tmp.name) / "raw"
+        sub = kernel / "foo"
+        sub.mkdir(parents=True)
+        env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+               "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+        subprocess.run(["git", "init", "-q"], cwd=sub, check=True, env=env)
+        subprocess.run(["git", "commit", "--allow-empty", "-q", "-m", "init"],
+                       cwd=sub, check=True, env=env)
+        head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=sub, text=True).strip()
+        update_wiki.KERNEL_ROOT = kernel
+        rc = update_wiki._main([
+            "seed", "--page", "foo/x.md", "--kind", "entity",
+            "--covers", "foo/x.c", "--mock-llm",
+        ])
+        self.assertEqual(rc, 0)
+        page = (_meta_io.WIKI_ROOT / "foo" / "x.md").read_text()
+        self.assertIn(f"last_synced_sha: {head}", page)
+
+    def test_seed_records_null_sha_when_subtree_is_not_git(self):
+        kernel = Path(self.tmp.name) / "raw"
+        (kernel / "foo").mkdir(parents=True)  # plain dir, no .git
+        update_wiki.KERNEL_ROOT = kernel
+        rc = update_wiki._main([
+            "seed", "--page", "foo/x.md", "--kind", "entity",
+            "--covers", "foo/x.c", "--mock-llm",
+        ])
+        self.assertEqual(rc, 0)
+        page = (_meta_io.WIKI_ROOT / "foo" / "x.md").read_text()
+        self.assertIn("last_synced_sha: null", page)
 
 
 if __name__ == "__main__":

@@ -258,14 +258,7 @@ def cmd_seed(args: argparse.Namespace) -> int:
         return 2
 
     kernel_dir = KERNEL_ROOT
-    head_sha = None
-    if kernel_dir.exists():
-        try:
-            head_sha = subprocess.check_output(
-                ["git", "-C", str(kernel_dir), "rev-parse", "HEAD"],
-                text=True).strip()
-        except subprocess.CalledProcessError:
-            head_sha = None
+    head_sha = _git_head(_resolve_subtree(args.covers))
     files = _list_kernel_files(kernel_dir, args.covers, cap=args.max_files)
     excerpts = ""
     for rel in files[:args.max_excerpts]:
@@ -512,8 +505,8 @@ def _mock_llm_query(messages: list[dict[str, Any]], *, system: str | None,
         text=body, usage={"mock": True}, model="mock", raw={})
 
 
-def _git_head(kernel_dir: Path) -> str | None:
-    if not (kernel_dir / ".git").exists():
+def _git_head(kernel_dir: Path | None) -> str | None:
+    if kernel_dir is None or not (kernel_dir / ".git").exists():
         return None
     try:
         return subprocess.check_output(
@@ -523,12 +516,37 @@ def _git_head(kernel_dir: Path) -> str | None:
         return None
 
 
+def _resolve_subtree(covers: list[str]) -> Path | None:
+    """Resolve the per-sub-tree git root from a page's covers.
+
+    Returns ``KERNEL_ROOT / <first segment>`` if all non-empty covers share
+    a common first path segment and that path exists. Returns ``None`` for
+    empty covers, covers that span multiple sub-trees, or a missing path.
+    Asking git at ``KERNEL_ROOT`` itself walks up to the wiki repo, which
+    is the wrong sha to record on a page; this helper keeps sha resolution
+    scoped to each raw/<top>/ tree.
+    """
+    segs = {c.split("/", 1)[0] for c in covers if c}
+    if len(segs) != 1:
+        return None
+    sub = KERNEL_ROOT / segs.pop()
+    return sub if sub.exists() else None
+
+
 def cmd_query(args: argparse.Namespace) -> int:
     fm_tpl, system_prompt = _load_template(args.template)
     cov = Coverage.load()
     pages = [p.strip() for p in (args.pages or "").split(",") if p.strip()]
     wiki_context, sources = _load_wiki_context(pages, cov)
-    kernel_sha = _git_head(KERNEL_ROOT) or cov.last_kernel_sha
+    # Resolve "kernel sha at query" from the first page's sub-tree. Pages
+    # spanning multiple sub-trees still get correct per-page sha via the
+    # `sources` provenance field.
+    first_covers = next(
+        (cov.pages.get(p, {}).get("covers") or [] for p in pages
+         if cov.pages.get(p, {}).get("covers")),
+        [],
+    )
+    kernel_sha = _git_head(_resolve_subtree(first_covers)) or cov.last_kernel_sha
 
     # Build the task-specific user message.
     if args.template == "code-review":
