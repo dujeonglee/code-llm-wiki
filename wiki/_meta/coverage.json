@@ -1,5 +1,1725 @@
 {
-  "schema_version": 1,
-  "last_kernel_sha": null,
-  "pages": {}
+  "last_kernel_sha": "114fcc4f30d1fd1be45c63ce19dac706e0d18fb5",
+  "pages": {
+    "raw/pcie_scsc/acm_api.md": {
+      "covers": [
+        "pcie_scsc/acm_api.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/ba.md": {
+      "covers": [
+        "pcie_scsc/ba.c",
+        "pcie_scsc/ba.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/ba_replay.md": {
+      "covers": [
+        "pcie_scsc/ba_replay.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/cac.md": {
+      "covers": [
+        "pcie_scsc/cac.c",
+        "pcie_scsc/cac.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/cfg80211_ops.md": {
+      "covers": [
+        "pcie_scsc/cfg80211_ops.c",
+        "pcie_scsc/cfg80211_ops.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/channels.md": {
+      "covers": [
+        "pcie_scsc/channels.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/cm_if.md": {
+      "covers": [
+        "pcie_scsc/cm_if.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/conc_modes.md": {
+      "covers": [
+        "pcie_scsc/conc_modes.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/const.md": {
+      "covers": [
+        "pcie_scsc/const.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/dctas.md": {
+      "covers": [
+        "pcie_scsc/dctas.c",
+        "pcie_scsc/dctas.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/debug.md": {
+      "covers": [
+        "pcie_scsc/debug.c",
+        "pcie_scsc/debug.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/debug_frame.md": {
+      "covers": [
+        "pcie_scsc/debug_frame.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/dev.md": {
+      "covers": [
+        "pcie_scsc/dev.c",
+        "pcie_scsc/dev.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/dpd_mmap.md": {
+      "covers": [
+        "pcie_scsc/dpd_mmap.c",
+        "pcie_scsc/dpd_mmap.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/fapi.md": {
+      "covers": [
+        "pcie_scsc/fapi.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/fw_test.md": {
+      "covers": [
+        "pcie_scsc/fw_test.c",
+        "pcie_scsc/fw_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hanged_record.md": {
+      "covers": [
+        "pcie_scsc/hanged_record.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip.md": {
+      "covers": [
+        "pcie_scsc/hip.c",
+        "pcie_scsc/hip.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip4.md": {
+      "covers": [
+        "pcie_scsc/hip4.c",
+        "pcie_scsc/hip4.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip4_sampler.md": {
+      "covers": [
+        "pcie_scsc/hip4_sampler.c",
+        "pcie_scsc/hip4_sampler.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip4_smapper.md": {
+      "covers": [
+        "pcie_scsc/hip4_smapper.c",
+        "pcie_scsc/hip4_smapper.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip5.md": {
+      "covers": [
+        "pcie_scsc/hip5.c",
+        "pcie_scsc/hip5.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/hip_bh.md": {
+      "covers": [
+        "pcie_scsc/hip_bh.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/if_vif.md": {
+      "covers": [
+        "pcie_scsc/if_vif.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/ini_config.md": {
+      "covers": [
+        "pcie_scsc/ini_config.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/ioctl.md": {
+      "covers": [
+        "pcie_scsc/ioctl.c",
+        "pcie_scsc/ioctl.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kic.md": {
+      "covers": [
+        "pcie_scsc/kic.c",
+        "pcie_scsc/kic.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-common.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-common.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-acm_api.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-acm_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-ba.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-ba.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-ba_replay.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-ba_replay.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-cac.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-cac.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-cfg80211_ops.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-cfg80211_ops.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-cm_if.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-cm_if.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-debug.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-debug.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-debug_frame.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-debug_frame.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-dev.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-dev.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-dpd_mmap.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-dpd_mmap.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-fw_test.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-fw_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-hip.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-hip.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-hip4.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-hip4.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-hip4_sampler.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-hip4_sampler.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-hip4_smapper.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-hip4_smapper.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-hip5.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-hip5.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-ini_config.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-ini_config.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-ioctl.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-ioctl.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-kernel.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-kernel.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-kic.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-kic.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-load_manager.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-load_manager.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-log2us.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-log2us.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-log_clients.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-log_clients.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mbulk.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mbulk.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mgt.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mgt.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mib.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mib.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mib_text_convert.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mib_text_convert.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-misc.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-misc.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mlme.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mlme.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-mlme_nan.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-mlme_nan.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-netif.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-netif.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-nl80211_vendor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-nl80211_vendor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-nl80211_vendor_nan.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-nl80211_vendor_nan.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-panel_notifier.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-panel_notifier.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-procfs.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-procfs.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-reg_info.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-reg_info.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-rx.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-rx.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-sap_dbg.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-sap_dbg.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-sap_ma.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-sap_ma.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-sap_mlme.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-sap_mlme.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-sap_test.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-sap_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifi_fcq.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifi_fcq.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_api.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_core.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_core.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_debugfs.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_debugfs.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_internal.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_internal.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_module.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_module.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_connectivity.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_connectivity.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_pktfate.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_pktfate.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_test.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_wakelock.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wifilogger_ring_wakelock.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-scsc_wlan_mmap.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-scsc_wlan_mmap.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-slsi_cpuhp_monitor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-slsi_cpuhp_monitor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-slsi_tracepoint_debug.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-slsi_tracepoint_debug.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-src_sink.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-src_sink.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-tdls_manager.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-tdls_manager.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-traffic_monitor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-traffic_monitor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-tx.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-tx.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-txbp.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-txbp.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-udi.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-udi.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-mock-utils.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-mock-utils.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-ba.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-ba.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-ba_replay.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-ba_replay.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-cac.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-cac.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-cfg80211_ops.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-cfg80211_ops.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-cm_if.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-cm_if.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-debug.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-debug.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-dev.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-dev.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-dpd_mmap.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-dpd_mmap.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-fw_test.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-fw_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-hip.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-hip.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-hip4.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-hip4.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-hip4_sampler.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-hip4_sampler.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-hip4_smapper.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-hip4_smapper.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-hip5.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-hip5.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-ini_config.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-ini_config.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-ioctl.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-ioctl.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-load_manager.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-load_manager.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-log2us.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-log2us.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-log_clients.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-log_clients.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mbulk.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mbulk.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mgt.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mgt.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mib.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mib.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mib_text_convert.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mib_text_convert.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mlme.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mlme.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-mlme_nan.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-mlme_nan.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-netif.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-netif.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-nl80211_vendor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-nl80211_vendor.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-nl80211_vendor_nan.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-nl80211_vendor_nan.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-procfs.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-procfs.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-qsfs.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-qsfs.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-reg_info.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-reg_info.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-ril_notifier.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-ril_notifier.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-rx.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-rx.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-sap_dbg.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-sap_dbg.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-sap_ma.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-sap_ma.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-sap_mlme.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-sap_mlme.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-sap_test.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-sap_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifi_fcq.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifi_fcq.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_api.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_api.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_core.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_core.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_internal.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_internal.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_module.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_module.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_connectivity.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_connectivity.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_pktfate.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_pktfate.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_wakelock.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wifilogger_ring_wakelock.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-scsc_wlan_mmap.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-scsc_wlan_mmap.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-slsi_cpuhp_monitor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-slsi_cpuhp_monitor.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-slsi_tracepoint_debug.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-slsi_tracepoint_debug.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-src_sink.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-src_sink.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-tdls_manager.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-tdls_manager.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-traffic_monitor.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-traffic_monitor.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-tx.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-tx.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-txbp.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-txbp.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/kunit/kunit-test-udi.md": {
+      "covers": [
+        "pcie_scsc/kunit/kunit-test-udi.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/lls.md": {
+      "covers": [
+        "pcie_scsc/lls.c",
+        "pcie_scsc/lls.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/load_manager.md": {
+      "covers": [
+        "pcie_scsc/load_manager.c",
+        "pcie_scsc/load_manager.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/local_packet_capture.md": {
+      "covers": [
+        "pcie_scsc/local_packet_capture.c",
+        "pcie_scsc/local_packet_capture.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/log2us.md": {
+      "covers": [
+        "pcie_scsc/log2us.c",
+        "pcie_scsc/log2us.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/log_clients.md": {
+      "covers": [
+        "pcie_scsc/log_clients.c",
+        "pcie_scsc/log_clients.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mbulk.md": {
+      "covers": [
+        "pcie_scsc/mbulk.c",
+        "pcie_scsc/mbulk.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mbulk_def.md": {
+      "covers": [
+        "pcie_scsc/mbulk_def.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mgt.md": {
+      "covers": [
+        "pcie_scsc/mgt.c",
+        "pcie_scsc/mgt.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mib.md": {
+      "covers": [
+        "pcie_scsc/mib.c",
+        "pcie_scsc/mib.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mib_text_convert.md": {
+      "covers": [
+        "pcie_scsc/mib_text_convert.c",
+        "pcie_scsc/mib_text_convert.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/mlme.md": {
+      "covers": [
+        "pcie_scsc/mlme.c",
+        "pcie_scsc/mlme.h"
+      ],
+      "kind": "entity",
+      "last_synced": "2026-05-12T13:40:50Z",
+      "last_synced_sha": "114fcc4f30d1fd1be45c63ce19dac706e0d18fb5"
+    },
+    "raw/pcie_scsc/mlme_nan.md": {
+      "covers": [
+        "pcie_scsc/mlme_nan.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/netif.md": {
+      "covers": [
+        "pcie_scsc/netif.c",
+        "pcie_scsc/netif.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/nl80211_vendor.md": {
+      "covers": [
+        "pcie_scsc/nl80211_vendor.c",
+        "pcie_scsc/nl80211_vendor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/nl80211_vendor_nan.md": {
+      "covers": [
+        "pcie_scsc/nl80211_vendor_nan.c",
+        "pcie_scsc/nl80211_vendor_nan.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/osal/slsi_wakelock.md": {
+      "covers": [
+        "pcie_scsc/osal/slsi_wakelock.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/panel_notifier.md": {
+      "covers": [
+        "pcie_scsc/panel_notifier.c",
+        "pcie_scsc/panel_notifier.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/porting_imx.md": {
+      "covers": [
+        "pcie_scsc/porting_imx.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/procfs.md": {
+      "covers": [
+        "pcie_scsc/procfs.c",
+        "pcie_scsc/procfs.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/qsfs.md": {
+      "covers": [
+        "pcie_scsc/qsfs.c",
+        "pcie_scsc/qsfs.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/reg_info.md": {
+      "covers": [
+        "pcie_scsc/reg_info.c",
+        "pcie_scsc/reg_info.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/ril_notifier.md": {
+      "covers": [
+        "pcie_scsc/ril_notifier.c",
+        "pcie_scsc/ril_notifier.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/rx.md": {
+      "covers": [
+        "pcie_scsc/rx.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/sap.md": {
+      "covers": [
+        "pcie_scsc/sap.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/sap_dbg.md": {
+      "covers": [
+        "pcie_scsc/sap_dbg.c",
+        "pcie_scsc/sap_dbg.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/sap_ma.md": {
+      "covers": [
+        "pcie_scsc/sap_ma.c",
+        "pcie_scsc/sap_ma.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/sap_mlme.md": {
+      "covers": [
+        "pcie_scsc/sap_mlme.c",
+        "pcie_scsc/sap_mlme.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/sap_test.md": {
+      "covers": [
+        "pcie_scsc/sap_test.c",
+        "pcie_scsc/sap_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifi_cm_if.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifi_cm_if.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifi_fcq.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifi_fcq.c",
+        "pcie_scsc/scsc_wifi_fcq.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_api.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_api.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_core.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_core.c",
+        "pcie_scsc/scsc_wifilogger_core.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_debugfs.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_debugfs.c",
+        "pcie_scsc/scsc_wifilogger_debugfs.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_internal.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_internal.c",
+        "pcie_scsc/scsc_wifilogger_internal.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_module.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_module.c",
+        "pcie_scsc/scsc_wifilogger_module.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_connectivity.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_connectivity.c",
+        "pcie_scsc/scsc_wifilogger_ring_connectivity.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_connectivity_api.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_connectivity_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_pktfate.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_pktfate.c",
+        "pcie_scsc/scsc_wifilogger_ring_pktfate.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_pktfate_api.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_pktfate_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_test.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_test.c",
+        "pcie_scsc/scsc_wifilogger_ring_test.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_wakelock.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_wakelock.c",
+        "pcie_scsc/scsc_wifilogger_ring_wakelock.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_ring_wakelock_api.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_ring_wakelock_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_rings.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_rings.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wifilogger_types.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger_types.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/scsc_wlan_mmap.md": {
+      "covers": [
+        "pcie_scsc/scsc_wlan_mmap.c",
+        "pcie_scsc/scsc_wlan_mmap.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/slsi_cpuhp_monitor.md": {
+      "covers": [
+        "pcie_scsc/slsi_cpuhp_monitor.c",
+        "pcie_scsc/slsi_cpuhp_monitor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/slsi_tracepoint_debug.md": {
+      "covers": [
+        "pcie_scsc/slsi_tracepoint_debug.c",
+        "pcie_scsc/slsi_tracepoint_debug.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/src_sink.md": {
+      "covers": [
+        "pcie_scsc/src_sink.c",
+        "pcie_scsc/src_sink.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/tdls_manager.md": {
+      "covers": [
+        "pcie_scsc/tdls_manager.c",
+        "pcie_scsc/tdls_manager.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/test/dev_test.md": {
+      "covers": [
+        "pcie_scsc/test/dev_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/test/hip_test.md": {
+      "covers": [
+        "pcie_scsc/test/hip_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/test/hydra_test.md": {
+      "covers": [
+        "pcie_scsc/test/hydra_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/test/udi_test.md": {
+      "covers": [
+        "pcie_scsc/test/udi_test.c"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/test/unittest.md": {
+      "covers": [
+        "pcie_scsc/test/unittest.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/traffic_monitor.md": {
+      "covers": [
+        "pcie_scsc/traffic_monitor.c",
+        "pcie_scsc/traffic_monitor.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/tx.md": {
+      "covers": [
+        "pcie_scsc/tx.c",
+        "pcie_scsc/tx.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/tx_api.md": {
+      "covers": [
+        "pcie_scsc/tx_api.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/txbp.md": {
+      "covers": [
+        "pcie_scsc/txbp.c",
+        "pcie_scsc/txbp.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/udi.md": {
+      "covers": [
+        "pcie_scsc/udi.c",
+        "pcie_scsc/udi.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/unifiio.md": {
+      "covers": [
+        "pcie_scsc/unifiio.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/utils.md": {
+      "covers": [
+        "pcie_scsc/utils.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/utils_80211.md": {
+      "covers": [
+        "pcie_scsc/utils_80211.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/wl_result.md": {
+      "covers": [
+        "pcie_scsc/wl_result.h"
+      ],
+      "kind": "entity",
+      "last_synced": null,
+      "last_synced_sha": null
+    }
+  },
+  "schema_version": 1
 }

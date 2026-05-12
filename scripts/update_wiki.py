@@ -257,7 +257,7 @@ def cmd_seed(args: argparse.Namespace) -> int:
               file=sys.stderr)
         return 2
 
-    kernel_dir = Path(args.kernel_dir)
+    kernel_dir = KERNEL_ROOT
     head_sha = None
     if kernel_dir.exists():
         try:
@@ -418,7 +418,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     routing = json.loads(Path(args.routing).read_text())
     run_update(
         routing,
-        kernel_dir=Path(args.kernel_dir),
+        kernel_dir=KERNEL_ROOT,
         profile=args.profile,
         mock_llm=args.mock_llm,
         dry_run=args.dry_run,
@@ -528,7 +528,7 @@ def cmd_query(args: argparse.Namespace) -> int:
     cov = Coverage.load()
     pages = [p.strip() for p in (args.pages or "").split(",") if p.strip()]
     wiki_context, sources = _load_wiki_context(pages, cov)
-    kernel_sha = _git_head(Path(args.kernel_dir)) or cov.last_kernel_sha
+    kernel_sha = _git_head(KERNEL_ROOT) or cov.last_kernel_sha
 
     # Build the task-specific user message.
     if args.template == "code-review":
@@ -629,8 +629,6 @@ def _main(argv: list[str]) -> int:
                         help="use deterministic stub (no API call)")
     common.add_argument("--dry-run", action="store_true",
                         help="print result without touching the wiki tree")
-    common.add_argument("--kernel-dir", default=str(KERNEL_ROOT),
-                        help=f"kernel source tree (default: {KERNEL_ROOT})")
 
     s = sub.add_parser("seed", parents=[common],
                        help="create a new page from scratch")

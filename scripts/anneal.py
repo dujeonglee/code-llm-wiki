@@ -367,7 +367,7 @@ def _scan(args: argparse.Namespace) -> int:
     cands = scan_candidates(
         cov,
         WIKI_ROOT,
-        Path(args.kernel_dir),
+        KERNEL_ROOT,
         TODO_PATH,
         max_age_days=args.max_age_days,
     )
@@ -381,7 +381,7 @@ def _run(args: argparse.Namespace) -> int:
     cands = scan_candidates(
         cov,
         WIKI_ROOT,
-        Path(args.kernel_dir),
+        KERNEL_ROOT,
         TODO_PATH,
         max_age_days=args.max_age_days,
     )
@@ -395,7 +395,7 @@ def _run(args: argparse.Namespace) -> int:
     for c in picked:
         ok = apply_candidate(
             c, cov,
-            kernel_dir=Path(args.kernel_dir),
+            kernel_dir=KERNEL_ROOT,
             profile=args.profile,
             mock_llm=args.mock_llm,
             dry_run=args.dry_run,
@@ -413,8 +413,6 @@ def _main(argv: list[str]) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--kernel-dir", default=str(KERNEL_ROOT),
-                        help=f"kernel source tree (default: {KERNEL_ROOT})")
     common.add_argument("--max-age-days", type=int,
                         default=DEFAULT_MAX_AGE_DAYS,
                         help="page is 'stale' beyond this many days "

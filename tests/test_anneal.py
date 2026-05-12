@@ -34,23 +34,29 @@ class _IsolatedWiki:
             "COVERAGE_PATH": _meta_io.COVERAGE_PATH,
             "TODO_PATH": _meta_io.TODO_PATH,
             "uw_wiki": update_wiki.WIKI_ROOT,
+            "uw_kernel": update_wiki.KERNEL_ROOT,
             "an_wiki": anneal.WIKI_ROOT,
             "an_todo": anneal.TODO_PATH,
+            "an_kernel": anneal.KERNEL_ROOT,
         }
         _meta_io.WIKI_ROOT = self.wiki_root
         _meta_io.COVERAGE_PATH = self.cov_path
         _meta_io.TODO_PATH = self.todo_path
         update_wiki.WIKI_ROOT = self.wiki_root
+        update_wiki.KERNEL_ROOT = self.kernel_dir
         anneal.WIKI_ROOT = self.wiki_root
         anneal.TODO_PATH = self.todo_path
+        anneal.KERNEL_ROOT = self.kernel_dir
 
     def tearDown(self):
         _meta_io.WIKI_ROOT = self._orig["WIKI_ROOT"]
         _meta_io.COVERAGE_PATH = self._orig["COVERAGE_PATH"]
         _meta_io.TODO_PATH = self._orig["TODO_PATH"]
         update_wiki.WIKI_ROOT = self._orig["uw_wiki"]
+        update_wiki.KERNEL_ROOT = self._orig["uw_kernel"]
         anneal.WIKI_ROOT = self._orig["an_wiki"]
         anneal.TODO_PATH = self._orig["an_todo"]
+        anneal.KERNEL_ROOT = self._orig["an_kernel"]
 
     def _write_page(self, rel: str, fm: dict, body: str = "body\n"):
         path = self.wiki_root / rel
@@ -206,7 +212,6 @@ class ApplyTests(_IsolatedWiki, unittest.TestCase):
         }}, kernel_sha="new")
         rc = anneal._main([
             "run", "--budget", "5", "--mock-llm",
-            "--kernel-dir", str(self.kernel_dir),
         ])
         self.assertEqual(rc, 0)
         page = (self.wiki_root / "subsystems" / "mm.md").read_text()
@@ -221,7 +226,6 @@ class ApplyTests(_IsolatedWiki, unittest.TestCase):
               "Also [[concepts/no_such_page]] here.\n")
         rc = anneal._main([
             "run", "--budget", "5", "--mock-llm",
-            "--kernel-dir", str(self.kernel_dir),
         ])
         self.assertEqual(rc, 0)
         page = (self.wiki_root / "subsystems" / "a.md").read_text()
@@ -243,7 +247,6 @@ class ApplyTests(_IsolatedWiki, unittest.TestCase):
         }}, kernel_sha="new")
         rc = anneal._main([
             "run", "--budget", "5", "--mock-llm",
-            "--kernel-dir", str(self.kernel_dir),
         ])
         self.assertEqual(rc, 0)
         cov = json.loads(self.cov_path.read_text())
@@ -269,7 +272,6 @@ class ApplyTests(_IsolatedWiki, unittest.TestCase):
             cov.save(self.cov_path)
         rc = anneal._main([
             "run", "--budget", "1", "--mock-llm",
-            "--kernel-dir", str(self.kernel_dir),
         ])
         self.assertEqual(rc, 0)
         # p2 is the oldest -> highest score -> only one written

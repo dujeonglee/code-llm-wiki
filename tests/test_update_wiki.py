@@ -93,17 +93,22 @@ class _IsolatedWiki:
             "COVERAGE_PATH": _meta_io.COVERAGE_PATH,
             "TODO_PATH": _meta_io.TODO_PATH,
             "uw_wiki": update_wiki.WIKI_ROOT,
+            "uw_kernel": update_wiki.KERNEL_ROOT,
         }
         _meta_io.WIKI_ROOT = root / "wiki"
         _meta_io.COVERAGE_PATH = root / "wiki" / "_meta" / "coverage.json"
         _meta_io.TODO_PATH = root / "wiki" / "_meta" / "todo.md"
         update_wiki.WIKI_ROOT = root / "wiki"
+        # Tests don't need a real raw tree; point KERNEL_ROOT at a missing dir
+        # so _list_kernel_files / _git_head return empty quietly.
+        update_wiki.KERNEL_ROOT = root / "no-kernel-here"
 
     def tearDown(self):
         _meta_io.WIKI_ROOT = self._orig["WIKI_ROOT"]
         _meta_io.COVERAGE_PATH = self._orig["COVERAGE_PATH"]
         _meta_io.TODO_PATH = self._orig["TODO_PATH"]
         update_wiki.WIKI_ROOT = self._orig["uw_wiki"]
+        update_wiki.KERNEL_ROOT = self._orig["uw_kernel"]
 
 
 class SeedTests(_IsolatedWiki, unittest.TestCase):
@@ -114,7 +119,6 @@ class SeedTests(_IsolatedWiki, unittest.TestCase):
             "--kind", "subsystem",
             "--covers", "mm/*.c", "mm/*.h",
             "--mock-llm",
-            "--kernel-dir", "/does/not/exist",
         ])
         self.assertEqual(rc, 0)
         page = (_meta_io.WIKI_ROOT / "subsystems" / "mm.md").read_text()
@@ -132,20 +136,17 @@ class SeedTests(_IsolatedWiki, unittest.TestCase):
         update_wiki._main([
             "seed", "--page", "x.md", "--kind", "concept",
             "--covers", "a/*", "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         # second seed without --overwrite should fail
         rc = update_wiki._main([
             "seed", "--page", "x.md", "--kind", "concept",
             "--covers", "a/*", "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         self.assertEqual(rc, 2)
         # with --overwrite, succeeds
         rc = update_wiki._main([
             "seed", "--page", "x.md", "--kind", "concept",
             "--covers", "a/*", "--mock-llm",
-            "--kernel-dir", "/none",
             "--overwrite",
         ])
         self.assertEqual(rc, 0)
@@ -194,7 +195,6 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
             "update",
             "--routing", str(routing_path),
             "--mock-llm",
-            "--kernel-dir", "/does/not/exist",
         ])
         self.assertEqual(rc, 0)
 
@@ -240,7 +240,6 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
         rpath.write_text(json.dumps(routing))
         rc = update_wiki._main([
             "update", "--routing", str(rpath), "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         self.assertEqual(rc, 0)
         page = (_meta_io.WIKI_ROOT / page_rel).read_text()
@@ -260,7 +259,6 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
         rpath.write_text(json.dumps(routing))
         rc = update_wiki._main([
             "update", "--routing", str(rpath), "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         self.assertEqual(rc, 0)
 
@@ -313,7 +311,6 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
             "--pages", "subsystems/mm.md",
             "--out", str(out),
             "--mock-llm",
-            "--kernel-dir", "/does/not/exist",
         ])
         self.assertEqual(rc, 0)
         fm, body = _meta_io.parse_front_matter(out.read_text())
@@ -338,7 +335,6 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
             update_wiki._main([
                 "query", "--template", "porting-guide",
                 "--out", str(out), "--mock-llm",
-                "--kernel-dir", "/none",
             ])
 
     def test_feature_impl_minimal_inputs(self):
@@ -347,7 +343,6 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
             "query", "--template", "feature-impl",
             "--feature", "add a memory pressure callback to slab",
             "--out", str(out), "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         self.assertEqual(rc, 0)
         fm, _ = _meta_io.parse_front_matter(out.read_text())
@@ -363,7 +358,6 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
             "query", "--template", "feature-impl",
             "--feature", "x",
             "--out", str(out), "--mock-llm",
-            "--kernel-dir", "/none",
         ])
         fm, _ = _meta_io.parse_front_matter(out.read_text())
         self.assertNotIn("freshness", fm)

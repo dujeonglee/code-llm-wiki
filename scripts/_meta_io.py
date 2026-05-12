@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 COVERAGE_PATH = REPO_ROOT / "wiki" / "_meta" / "coverage.json"
 TODO_PATH = REPO_ROOT / "wiki" / "_meta" / "todo.md"
 WIKI_ROOT = REPO_ROOT / "wiki"
-KERNEL_ROOT = REPO_ROOT / "raw" / "linux"
+KERNEL_ROOT = REPO_ROOT / "raw"
 
 
 # ---------------------------------------------------------------------------
