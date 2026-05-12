@@ -1,6 +1,6 @@
-"""Wiki generate / update core.
+"""Wiki generate / update / query core.
 
-Two subcommands:
+Three subcommands:
 
 * ``seed``   — create a new page from scratch for an area the wiki doesn't
                yet cover. Triggered manually for the very first pages, and
@@ -8,6 +8,13 @@ Two subcommands:
 * ``update`` — patch-driven update of existing pages, consuming the JSON
                from ``patch_router.py``. Only pages whose ``covers`` match
                files in the manifest are re-synced.
+* ``query``  — run a templated question (code-review / porting-guide /
+               feature-impl) using selected wiki pages as grounded
+               context. Output is a query artifact under wiki/queries/
+               with full provenance (template, kernel sha, source pages
+               + their last_synced_sha at query time, LLM profile/model,
+               timestamp). The artifact is for AUDIT TRAIL only — see
+               CLAUDE.md §3.3 on the no-reuse rule.
 
 Both call the same LLM prompt machinery in ``scripts.llm_client``. Both
 support ``--mock-llm`` for offline testing — the mock emits a deterministic
@@ -421,6 +428,193 @@ def cmd_update(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
+# QUERY (D7-lite)
+# ---------------------------------------------------------------------------
+#
+# Provenance philosophy (CLAUDE.md §3.3):
+# - We RECORD what the LLM saw (template, source pages + their sha at query
+#   time, kernel sha, model). This is an audit trail.
+# - We DO NOT compute a "freshness" badge or auto-refresh, because doing so
+#   risks giving the artifact false authority (a green badge means "sources
+#   haven't moved", not "the conclusion is still right").
+# - Saved queries are SINGLE-USE for code-review, RESEARCH-STARTING-POINT
+#   for porting, and TEMPORARY for feature-impl. If you're unsure, re-run.
+
+TEMPLATE_DIR = WIKI_ROOT / "queries" / "_templates"
+
+
+def _load_template(template_id: str) -> tuple[dict[str, Any], str]:
+    """Return (front_matter, system_prompt_body) for the named template."""
+    path = TEMPLATE_DIR / f"{template_id}.md"
+    if not path.exists():
+        raise SystemExit(
+            f"[query] no such template '{template_id}'. Available: "
+            f"{[p.stem for p in TEMPLATE_DIR.glob('*.md')]}"
+        )
+    fm, body = parse_front_matter(path.read_text())
+    # The template body has both "# System prompt" and "# User message
+    # scaffold" sections. We want only the system-prompt half.
+    if "# User message scaffold" in body:
+        system = body.split("# User message scaffold", 1)[0]
+    else:
+        system = body
+    # Strip the "# System prompt" heading itself.
+    if system.lstrip().startswith("# System prompt"):
+        system = system.split("\n", 1)[1] if "\n" in system else system
+    return fm, system.strip() + "\n"
+
+
+def _load_wiki_context(page_rels: list[str], cov: Coverage,
+                       max_chars_per_page: int = 6000
+                       ) -> tuple[str, list[str]]:
+    """Build the WIKI CONTEXT string for the user message, and a parallel
+    list of ``"path@sha"`` provenance records (or ``"path@missing"``).
+    Kept as plain strings so they serialise cleanly into YAML front-matter
+    without needing a full YAML library."""
+    chunks: list[str] = []
+    sources: list[str] = []
+    for rel in page_rels:
+        page = _read_page(rel)
+        if page is None:
+            sources.append(f"{rel}@missing")
+            continue
+        fm, body = page
+        sha = (fm.get("last_synced_sha")
+               or cov.pages.get(rel, {}).get("last_synced_sha")
+               or "unknown")
+        sources.append(f"{rel}@{sha}")
+        trimmed = body if len(body) <= max_chars_per_page else (
+            body[:max_chars_per_page] + "\n... [page truncated for query]\n")
+        chunks.append(
+            f"### [[{rel}]] (last_synced_sha={sha})\n\n{trimmed.rstrip()}\n"
+        )
+    return "\n".join(chunks), sources
+
+
+def _mock_llm_query(messages: list[dict[str, Any]], *, system: str | None,
+                    profile: str | None, max_tokens: int | None = None,
+                    temperature: float | None = None,
+                    cache_system: bool = True) -> llm_client.ChatResult:
+    """Deterministic stub for query tests / offline rehearsal."""
+    user = messages[-1]["content"]
+    template_line = next((ln for ln in user.splitlines()
+                          if ln.startswith("TASK:")), "TASK: unknown")
+    template = template_line.split(":", 1)[1].strip()
+    body = (
+        "## Summary\n"
+        f"_(mock-LLM {template} response — replace with a real run.)_\n\n"
+        "## Affected wiki areas\n"
+        "- (none cited by the mock)\n\n"
+        "## Risks\n"
+        "- (mock did not analyse risks)\n"
+    )
+    return llm_client.ChatResult(
+        text=body, usage={"mock": True}, model="mock", raw={})
+
+
+def _git_head(kernel_dir: Path) -> str | None:
+    if not (kernel_dir / ".git").exists():
+        return None
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(kernel_dir), "rev-parse", "HEAD"],
+            text=True).strip()
+    except subprocess.CalledProcessError:
+        return None
+
+
+def cmd_query(args: argparse.Namespace) -> int:
+    fm_tpl, system_prompt = _load_template(args.template)
+    cov = Coverage.load()
+    pages = [p.strip() for p in (args.pages or "").split(",") if p.strip()]
+    wiki_context, sources = _load_wiki_context(pages, cov)
+    kernel_sha = _git_head(Path(args.kernel_dir)) or cov.last_kernel_sha
+
+    # Build the task-specific user message.
+    if args.template == "code-review":
+        if not args.input:
+            raise SystemExit("[query] code-review needs --input <patch-file>")
+        payload = Path(args.input).read_text()
+        user_body = (
+            f"TASK: code-review\n"
+            f"PATCH:\n```diff\n{payload}\n```\n\n"
+            f"WIKI CONTEXT ({len(pages)} page(s)):\n{wiki_context}\n\n"
+            f"KERNEL SHA AT QUERY: {kernel_sha}\n"
+        )
+    elif args.template == "porting-guide":
+        if not (args.target_os and args.feature):
+            raise SystemExit(
+                "[query] porting-guide needs --target-os and --feature"
+            )
+        user_body = (
+            f"TASK: porting-guide\n"
+            f"TARGET OS: {args.target_os}\n"
+            f"FEATURE: {args.feature}\n"
+            f"CONSTRAINTS: {args.constraints or '(none)'}\n\n"
+            f"WIKI CONTEXT ({len(pages)} page(s)):\n{wiki_context}\n\n"
+            f"KERNEL SHA AT QUERY: {kernel_sha}\n"
+        )
+    elif args.template == "feature-impl":
+        if not args.feature:
+            raise SystemExit("[query] feature-impl needs --feature")
+        user_body = (
+            f"TASK: feature-impl\n"
+            f"FEATURE: {args.feature}\n"
+            f"CONSTRAINTS: {args.constraints or '(none)'}\n\n"
+            f"WIKI CONTEXT ({len(pages)} page(s)):\n{wiki_context}\n\n"
+            f"KERNEL SHA AT QUERY: {kernel_sha}\n"
+        )
+    else:
+        raise SystemExit(f"[query] unknown template '{args.template}'")
+
+    call = _mock_llm_query if args.mock_llm else llm_client.chat
+    res = call(
+        [{"role": "user", "content": user_body}],
+        system=system_prompt,
+        profile=args.profile,
+    )
+
+    # Provenance front-matter for the saved artifact.
+    # `sources` is the authoritative audit record: each entry is
+    # "<wiki path>@<last_synced_sha at query time>" (or "...@missing").
+    fm: dict[str, Any] = {
+        "title": args.title or f"{args.template} query",
+        "kind": "query",
+        "template": args.template,
+        "produced": now_iso(),
+        "kernel_sha_at_query": kernel_sha,
+        "llm_profile": args.profile or "(default)",
+        "llm_model": res.model,
+        "sources": sources,
+        "reuse_policy": {
+            "code-review":   "single-use audit only — never reuse for a "
+                             "different patch",
+            "porting-guide": "research starting point only — re-run when "
+                             "you actually port",
+            "feature-impl":  "valid until the feature lands — archive after",
+        }.get(args.template, "single-use audit only"),
+    }
+    page_text = serialize_page(fm, res.text)
+
+    if args.dry_run:
+        print(page_text)
+        return 0
+
+    out_path = Path(args.out) if args.out else (
+        WIKI_ROOT / "queries" /
+        f"{now_iso().replace(':', '').replace('-', '')[:13]}-{args.template}.md"
+    )
+    if not out_path.is_absolute():
+        out_path = WIKI_ROOT / out_path
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(page_text)
+    rel = out_path.relative_to(WIKI_ROOT).as_posix() if out_path.is_relative_to(WIKI_ROOT) else str(out_path)
+    print(f"[query] wrote {rel} ({len(page_text)} bytes) "
+          f"template={args.template} sources={len(sources)}")
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -459,6 +653,26 @@ def _main(argv: list[str]) -> int:
                    help="routing JSON from patch_router.py")
     u.add_argument("--max-diff-bytes", type=int, default=60_000)
     u.set_defaults(func=cmd_update)
+
+    q = sub.add_parser("query", parents=[common],
+                       help="run a templated question (code-review / "
+                            "porting-guide / feature-impl)")
+    q.add_argument("--template", required=True,
+                   choices=["code-review", "porting-guide", "feature-impl"])
+    q.add_argument("--out", help="path under wiki/queries/ (default: "
+                                 "auto-named with timestamp)")
+    q.add_argument("--title", help="title for the produced page")
+    q.add_argument("--pages",
+                   help="comma-separated wiki/ pages to use as context")
+    q.add_argument("--input",
+                   help="path to the task-specific input (e.g. patch diff "
+                        "for code-review)")
+    q.add_argument("--target-os", help="porting-guide: target OS / runtime")
+    q.add_argument("--feature",
+                   help="porting-guide / feature-impl: feature description")
+    q.add_argument("--constraints",
+                   help="porting-guide / feature-impl: extra constraints")
+    q.set_defaults(func=cmd_query)
 
     args = p.parse_args(argv)
     return args.func(args)

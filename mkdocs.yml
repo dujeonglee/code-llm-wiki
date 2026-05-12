@@ -23,6 +23,7 @@ site_dir: site
 # Hide our internal bookkeeping from the rendered site.
 exclude_docs: |
   _meta/
+  queries/_templates/
 
 theme:
   name: material

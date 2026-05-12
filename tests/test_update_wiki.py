@@ -265,5 +265,110 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
         self.assertEqual(rc, 0)
 
 
+class QueryTests(_IsolatedWiki, unittest.TestCase):
+    """D7-lite: query subcommand writes a saved artifact with full
+    provenance and no freshness scoring."""
+
+    def setUp(self):
+        super().setUp()
+        # Lay down the three real templates by copying from the live repo.
+        # We point TEMPLATE_DIR (resolved through update_wiki.WIKI_ROOT) at
+        # the temp wiki and create stub templates inline so tests are
+        # hermetic.
+        tpl_dir = _meta_io.WIKI_ROOT / "queries" / "_templates"
+        tpl_dir.mkdir(parents=True)
+        for tid in ("code-review", "porting-guide", "feature-impl"):
+            (tpl_dir / f"{tid}.md").write_text(
+                f"---\ntemplate_id: {tid}\n---\n\n"
+                "# System prompt\n\n"
+                "You are a careful reviewer. Ground every claim in [[pages]].\n\n"
+                "# User message scaffold\n\nIgnored at runtime.\n"
+            )
+        # The query command reads TEMPLATE_DIR via update_wiki, which we
+        # already redirected to the temp wiki in _IsolatedWiki.setUp().
+        update_wiki.TEMPLATE_DIR = tpl_dir
+
+    def test_code_review_writes_artifact_with_provenance(self):
+        # Seed a wiki page so the query has something to cite.
+        (_meta_io.WIKI_ROOT / "subsystems").mkdir()
+        (_meta_io.WIKI_ROOT / "subsystems" / "mm.md").write_text(
+            "---\ntitle: MM\nkind: subsystem\ncovers: [mm/*.c]\n"
+            "last_synced_sha: deadbeef\n---\n\nmm body\n")
+        cov = _meta_io.Coverage.load()
+        cov.last_kernel_sha = "deadbeef"
+        cov.pages["subsystems/mm.md"] = {
+            "kind": "subsystem", "covers": ["mm/*.c"],
+            "last_synced_sha": "deadbeef", "last_synced": None,
+        }
+        cov.save()
+
+        patch = Path(self.tmp.name) / "patch.diff"
+        patch.write_text("--- a/mm/slab.c\n+++ b/mm/slab.c\n@@\n- x\n+ y\n")
+
+        out = Path(self.tmp.name) / "out.md"
+        rc = update_wiki._main([
+            "query",
+            "--template", "code-review",
+            "--input", str(patch),
+            "--pages", "subsystems/mm.md",
+            "--out", str(out),
+            "--mock-llm",
+            "--kernel-dir", "/does/not/exist",
+        ])
+        self.assertEqual(rc, 0)
+        fm, body = _meta_io.parse_front_matter(out.read_text())
+        # Provenance must be recorded.
+        self.assertEqual(fm["template"], "code-review")
+        self.assertEqual(fm["kind"], "query")
+        # sources is "path@sha" so the sha at query time is preserved even
+        # if the page is later re-synced.
+        self.assertEqual(fm["sources"], ["subsystems/mm.md@deadbeef"])
+        self.assertEqual(fm["kernel_sha_at_query"], "deadbeef")
+        self.assertEqual(fm["llm_model"], "mock")
+        self.assertIn("produced", fm)
+        # The reuse policy line is mandatory so humans can't pretend they
+        # didn't see it.
+        self.assertIn("single-use", str(fm["reuse_policy"]).lower())
+        # Body comes from the mock LLM and includes the structured headings.
+        self.assertIn("## Summary", body)
+
+    def test_porting_guide_requires_target_and_feature(self):
+        out = Path(self.tmp.name) / "out.md"
+        with self.assertRaises(SystemExit):
+            update_wiki._main([
+                "query", "--template", "porting-guide",
+                "--out", str(out), "--mock-llm",
+                "--kernel-dir", "/none",
+            ])
+
+    def test_feature_impl_minimal_inputs(self):
+        out = Path(self.tmp.name) / "out.md"
+        rc = update_wiki._main([
+            "query", "--template", "feature-impl",
+            "--feature", "add a memory pressure callback to slab",
+            "--out", str(out), "--mock-llm",
+            "--kernel-dir", "/none",
+        ])
+        self.assertEqual(rc, 0)
+        fm, _ = _meta_io.parse_front_matter(out.read_text())
+        self.assertEqual(fm["template"], "feature-impl")
+        # sources is allowed to be empty (no --pages given).
+        self.assertEqual(fm["sources"], [])
+
+    def test_no_freshness_field_recorded(self):
+        """We deliberately do NOT compute a freshness/staleness score —
+        that's the central D7-lite decision. Regression-guard it."""
+        out = Path(self.tmp.name) / "out.md"
+        update_wiki._main([
+            "query", "--template", "feature-impl",
+            "--feature", "x",
+            "--out", str(out), "--mock-llm",
+            "--kernel-dir", "/none",
+        ])
+        fm, _ = _meta_io.parse_front_matter(out.read_text())
+        self.assertNotIn("freshness", fm)
+        self.assertNotIn("stale", str(fm).lower())
+
+
 if __name__ == "__main__":
     unittest.main()

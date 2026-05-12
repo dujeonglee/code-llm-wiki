@@ -34,7 +34,7 @@ CLAUDE.md           # 에이전트 SOP (LLM 운영 규칙)
 - [x] D3: 위키 생성/업데이트 코어
 - [x] D4: Annealing 잡
 - [x] D5: MkDocs 빌드 (HTML 정적 파일 생성)
-- [ ] D7: LLM 소비 패턴 + E2E
+- [x] D7: 쿼리 템플릿 + provenance (D7-lite)
 - ~~D6~~ — *호스팅 불요. 모든 파이프라인은 로컬에서 수동 실행. (제거됨)*
 
 ---
@@ -214,6 +214,9 @@ python -m scripts.update_wiki seed \
 | 영향 페이지 라우팅 | `python -m scripts.patch_router --manifest m.json [--apply]` |
 | 새 페이지 시드 | `python -m scripts.update_wiki seed --page P --kind K --covers G...` |
 | 패치 → 페이지 갱신 | `python -m scripts.update_wiki update --routing r.json` |
+| 코드 리뷰 쿼리 | `python -m scripts.update_wiki query --template code-review --input PATCH.diff --pages P1,P2 --out queries/X.md` |
+| 포팅 가이드 | `python -m scripts.update_wiki query --template porting-guide --target-os "FreeBSD 14" --feature "..." --pages P1,P2 --out ...` |
+| 기능 구현 가이드 | `python -m scripts.update_wiki query --template feature-impl --feature "..." --pages P1,P2 --out ...` |
 | Annealing 점검 | `python -m scripts.anneal scan` |
 | Annealing 수리 | `python -m scripts.anneal run --budget N` |
 | 빌드 preflight | `python -m scripts.build_site --preflight` |
@@ -319,6 +322,59 @@ python -m scripts.build_site --clean --strict
 ```
 
 빌드 산출물 `site/`는 `.gitignore`에 들어 있어 커밋되지 않습니다.
+
+---
+
+## 위키를 LLM 지식 기반으로 쓰기 (D7-lite)
+
+세 가지 표준 쿼리 템플릿이 있습니다. 각각 LLM이 위키 페이지를 **컨텍스트로 grounding 한 채**
+일관된 구조로 답하게 강제합니다.
+
+```
+wiki/queries/_templates/
+├── code-review.md      # 패치/PR 리뷰 (Summary / Invariants / Risks / Suggestions / ...)
+├── porting-guide.md    # 다른 OS로 포팅 (Linux anatomy / Target primitives / Plan / Hazards)
+└── feature-impl.md     # 새 기능 구현 계획 (Design / Step plan / Risk register / Test plan)
+```
+
+### 사용 예 — 코드 리뷰
+
+```bash
+# 1) 영향받을 페이지 결정 (라우터 도움)
+python -m scripts.patch_router --files mm/slab.c mm/slub.c
+
+# 2) 쿼리 실행
+python -m scripts.update_wiki query \
+    --template code-review \
+    --input /tmp/patch.diff \
+    --pages subsystems/mm.md,concepts/slab.md \
+    --out queries/2026-05-12-slab-kfree-rcu-review.md \
+    --title "slab: kfree_rcu rate-limit"
+```
+
+산출물 (`wiki/queries/2026-05-12-...md`) 의 front-matter:
+```yaml
+---
+title: ...
+kind: query
+template: code-review
+produced: 2026-05-12T03:14:00Z
+kernel_sha_at_query: abc1234
+llm_profile: claude
+llm_model: claude-opus-4-7
+sources:                       # "page@sha at query time"
+  - subsystems/mm.md@aaa111
+  - concepts/slab.md@bbb222
+reuse_policy: single-use audit only — never reuse for a different patch
+---
+```
+
+### 의도적으로 만들지 않은 것
+
+freshness 배지, stale-query 자동 검출, auto-refresh — **만들지 않았습니다**.
+이유: "출처가 안 움직였다"는 신호가 "결론이 맞다"로 오해되면 더 위험합니다.
+대신 모든 쿼리는 `reuse_policy` 한 줄을 fm에 박아두고, CLAUDE.md §3.3이
+사용 규칙을 명시합니다 (요약: 의심되면 재실행).
 
 ---
 

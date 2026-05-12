@@ -63,9 +63,26 @@ LLM이 코드 리뷰 / 포팅 / 기능 추가에 위키를 활용할 때:
 
 1. 먼저 `wiki/index.md` → 관련 `subsystems/*` / `concepts/*` 페이지를 읽는다.
 2. 부족하면 `covers:`에 적힌 raw 파일을 직접 본다.
-3. 산출물은 `wiki/queries/<slug>.md`에 저장하고, 사용한 페이지들을 `sources:`에 적는다.
+3. 산출물은 `wiki/queries/<slug>.md`에 저장하고, **provenance**(템플릿 ID, 참조한
+   페이지들과 각자의 `last_synced_sha`, 커널 HEAD sha, 모델, 시각)를 같이 적는다.
+   이건 `python -m scripts.update_wiki query`가 자동으로 함.
 
-템플릿: `wiki/queries/code-review.md`, `porting-guide.md`, `feature-impl.md`.
+**템플릿 (system prompt + 입력 스캐폴드)**: `wiki/queries/_templates/code-review.md`,
+`porting-guide.md`, `feature-impl.md`.
+
+#### 재사용 규칙 (중요)
+
+저장된 쿼리는 **감사용 흔적**이지 **재사용 가능한 캐시가 아니다**. 카테고리별 정책:
+
+| 템플릿 | 재사용 정책 |
+|---|---|
+| `code-review` | **일회용**. 다른 패치/PR에 절대 재활용하지 말 것. 같은 패치도 코드가 움직였으면 재실행. |
+| `porting-guide` | **연구 출발점**으로만. 실제 포팅 작업 시점에 양쪽 트리가 움직였을 가능성 높으므로 재실행 필수. |
+| `feature-impl` | **머지 전까지만 유효**. 기능이 들어간 뒤엔 `wiki/queries/archive/`로 이동 또는 폐기. |
+
+> 🚨 freshness 배지 같은 자동 신선도 표시는 의도적으로 만들지 않았다. "출처가 안 움직였다"는
+> 신호가 "결론이 여전히 맞다"는 보장으로 오해되어 더 위험한 거짓 자신감을 만들 수 있기 때문.
+> 의심되면 무조건 재실행하라.
 
 ## 4. LLM 호출
 
