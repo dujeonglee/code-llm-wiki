@@ -34,8 +34,8 @@ CLAUDE.md           # 에이전트 SOP (LLM 운영 규칙)
 - [x] D3: 위키 생성/업데이트 코어
 - [x] D4: Annealing 잡
 - [x] D5: MkDocs 빌드 (HTML 정적 파일 생성)
-- [ ] D6: GH Actions cron *(호스팅 부분 일시 보류)*
 - [ ] D7: LLM 소비 패턴 + E2E
+- ~~D6~~ — *호스팅 불요. 모든 파이프라인은 로컬에서 수동 실행. (제거됨)*
 
 ---
 
@@ -170,18 +170,21 @@ sync_kernel.py ─▶ patch_router.py ─▶ update_wiki update
                           (오래된 페이지 / 끊긴 링크 / drift 수리)
 ```
 
-수동 실행 예 (D6의 GitHub Actions가 이걸 대신 돌립니다):
+수동으로 한 사이클 돌리기 (필요한 빈도만큼 cron이나 셸 스크립트로 묶어 쓰면 됨):
 
 ```bash
-# 패치 사이클 1회 (보통 매시간 cron)
+# 패치 사이클 1회 — 권장 빈도: 매시간 또는 필요할 때
 python -m scripts.sync_kernel --record \
     | python -m scripts.patch_router --apply --out /tmp/r.json
 python -m scripts.update_wiki update --routing /tmp/r.json
 
-# Annealing 1회 (보통 매일 cron, budget으로 비용 상한)
+# Annealing 1회 — 권장 빈도: 매일, budget으로 비용 상한
 python -m scripts.anneal scan                                # 후보 점검(읽기만)
 python -m scripts.anneal run --budget 3                      # 상위 3개 수리
 python -m scripts.anneal run --budget 3 --dry-run --mock-llm # 안전 시연
+
+# HTML 다시 빌드 (위키가 바뀌었으면)
+python -m scripts.build_site --clean
 ```
 
 ---
@@ -316,132 +319,6 @@ python -m scripts.build_site --clean --strict
 ```
 
 빌드 산출물 `site/`는 `.gitignore`에 들어 있어 커밋되지 않습니다.
-
----
-
-## D6 (보류): GitHub Actions cron + 사내 풀러
-
-> 🛑 **현재 비활성 (사용자 결정으로 일시 보류)**. 워크플로 파일과 풀러 스크립트는
-> 저장소에 그대로 남아 있지만, 시크릿(`ANTHROPIC_API_KEY` 등)을 등록하지 않는 한
-> cron이 돌지 않습니다. 위키 본체 동작에는 영향 없습니다.
->
-> 나중에 다시 켜고 싶으면 시크릿 등록 + `gh workflow run sync.yml` 한 번이면 됩니다.
-
-
-
-self-hosted runner 없이 **GitHub-호스팅 runner**만으로 굴립니다. 사내 nginx 박스는
-GitHub Actions가 미리 만들어둔 산출물을 **outbound HTTPS로 끌어옵니다**.
-
-```
-   GitHub Cloud                       사내 망
-   ──────────────                     ──────────
-   .github/workflows/sync.yml          ┌────────────────────────┐
-   .github/workflows/anneal.yml        │ nginx 박스              │
-   .github/workflows/build.yml         │  - cron마다 풀러 실행   │
-       ↓                               │  - $WEBROOT 갱신        │
-   `site` 브랜치 또는                  │  - nginx가 사내에 서빙  │
-   `site-latest` 릴리스 tarball  ──→   └────────────────────────┘
-                                         outbound HTTPS to github.com
-```
-
-### 워크플로 3종
-
-| 파일 | 트리거 | 하는 일 | 결과 |
-|---|---|---|---|
-| `.github/workflows/sync.yml` | cron 매시간 + 수동 | 커널 git diff → 영향 페이지 LLM 업데이트 | `bot/sync` 브랜치로 PR |
-| `.github/workflows/anneal.yml` | cron 매일 04:43 UTC + 수동 | drift/stale/끊긴 링크 수리 | `bot/anneal` 브랜치로 PR |
-| `.github/workflows/build.yml` | main push + 매일 05:37 UTC + 수동 | `mkdocs build` → 두 채널 게시 | `site` 브랜치 force-push + `site-latest` 릴리스 |
-
-PR은 **항상 사람 리뷰**를 거쳐 main에 머지(CLAUDE.md 규칙 5). 빌드는 머지된 main에서
-자동으로 다시 돌아 `site` 브랜치 + 릴리스가 갱신됩니다.
-
-### 1회 셋업 (저장소 측)
-
-**Secrets** (Settings → Secrets and variables → Actions → Secrets):
-
-| 이름 | 필수 | 용도 |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | claude 프로필 쓸 때 | 위키 생성/갱신 LLM 호출 |
-| `OPENAI_API_KEY` | openai 프로필 쓸 때 | 위키 생성/갱신 LLM 호출 |
-| `GITHUB_TOKEN` | 자동 제공 | PR/릴리스/푸시 |
-
-**Variables** (Settings → Secrets and variables → Actions → Variables) — 모두 옵션:
-
-| 이름 | 기본값 | 의미 |
-|---|---|---|
-| `KERNEL_REPO_URL` | `https://github.com/torvalds/linux` | 동기화할 커널 git URL |
-| `KERNEL_BRANCH` | `master` | 추적 브랜치 |
-| `KERNEL_SPARSE` | `mm net/core` | sparse-checkout 경로 (공백 구분) |
-| `LLM_PROFILE` | `claude` | `config/llm.example.json`의 프로필 키 |
-
-> 💡 처음에는 `KERNEL_SPARSE`를 `mm` 한 개로 좁혀서 비용·시간 감을 잡고 확장하세요.
-
-### 1회 셋업 (사내 nginx 박스)
-
-`scripts/internal-puller.sh`를 nginx 박스에 설치:
-
-```bash
-# nginx 박스에서
-sudo install -m 0755 scripts/internal-puller.sh /usr/local/bin/llm-wiki-pull
-
-# /etc/cron.d/llm-wiki
-*/5 * * * * www-data \
-    REPO=dujeonglee/code-llm-wiki \
-    WEBROOT=/var/www/llm-wiki \
-    MODE=branch \
-    /usr/local/bin/llm-wiki-pull >> /var/log/llm-wiki-pull.log 2>&1
-```
-
-#### 풀러 모드 두 가지
-
-| `MODE` | 동작 | 필요한 도구 | 비공개 저장소 시 |
-|---|---|---|---|
-| `branch` (기본) | `site` 브랜치를 `git fetch && git reset --hard`로 동기화 | `git`, HTTPS | `GITHUB_TOKEN` 환경변수 |
-| `tarball` | `site-latest` 릴리스의 `llm-wiki-site.tar.gz`를 curl → 원자적 swap | `curl`, `python3`, HTTPS | `GITHUB_TOKEN` 환경변수 |
-
-**둘 다 outbound HTTPS만 있으면 동작** (사내 망에서 github.com / api.github.com 도달 가능해야 함).
-
-#### nginx 설정 (재게시 안전)
-
-```nginx
-server {
-    listen 80;
-    server_name llm-wiki.intra;
-    root /var/www/llm-wiki;          # 풀러가 갱신하는 경로
-    index index.html;
-    location / { try_files $uri $uri/ $uri.html =404; }
-    gzip on; gzip_types text/css application/javascript text/html;
-}
-```
-
-`branch` 모드는 force-push된 history를 따라가므로 `git pull` 대신 `git reset --hard`를 씁니다.
-`tarball` 모드는 임시 디렉토리에 풀어 디렉토리 단위 rename으로 swap — nginx가 절반만 추출된
-파일을 서빙하는 일이 없습니다.
-
-### github.com 자체가 막혀 있는 경우 (에어갭)
-
-수동 전달 경로:
-
-1. 외부에서 가능한 머신에 푸시 (개발자 PC 등)
-2. 개발자가 워크플로 산출물 다운로드:
-   ```bash
-   gh run download -n site-html     # 또는
-   gh release download site-latest -p 'llm-wiki-site.tar.gz'
-   ```
-3. 사내로 운반(USB, 사내 패키지 저장소 업로드 등)
-4. nginx 박스에서 압축 해제 → `$WEBROOT`에 배치
-
-이 경우 `MODE=tarball`을 그대로 활용하되 `REPO`/`GITHUB_TOKEN` 대신 로컬 경로에서 푸는 변형 셸 스크립트를 추가하면 됩니다(필요시 D7에서).
-
-### 직접 한 번 돌려보기
-
-```bash
-# Actions 탭에서 "Run workflow" 버튼 (수동 트리거)
-# 또는 gh CLI로:
-gh workflow run sync.yml
-gh workflow run anneal.yml -f budget=3 -f max_age_days=14
-gh workflow run build.yml
-```
 
 ---
 
