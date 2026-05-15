@@ -141,24 +141,31 @@ xdg-open site/raw/<top>/<small_file>.html    # Linux
 python -m scripts.build_site --serve --bind 127.0.0.1:8000
 ```
 
-### 5. 나머지 페이지로 확장
+### 5. 나머지 페이지로 확장 (batch)
 
-워크플로가 잘 도는 것 확인했으면 큰 페이지나 batch로:
+워크플로가 잘 도는 것 확인했으면 `scripts/seed_all.py`로 일괄 처리:
 
 ```bash
-# coverage.json의 모든 미채움 페이지 순회 (예시)
-python -c "
-import json, subprocess
-cov = json.load(open('wiki/_meta/coverage.json'))
-for page, entry in sorted(cov['pages'].items()):
-    if entry.get('last_synced'):  # 이미 채워진 것 skip
-        continue
-    print('[batch]', page)
-    subprocess.run(['python', '-m', 'scripts.update_wiki', 'seed-agent',
-                    '--page', page, '--model', 'qwen3.6:27b-q4_K_M'],
-                   check=True)
-"
+# 미채움 페이지 전체 (mlme.md 등 last_synced가 이미 set된 것은 skip)
+python -m scripts.seed_all --model qwen3.6:27b-q4_K_M
+
+# 좁혀서: 한 디렉토리만
+python -m scripts.seed_all --model qwen3.6:27b-q4_K_M --filter 'raw/pcie_scsc/osal/*'
+
+# 명령만 미리보기 (실제 호출 안 함)
+python -m scripts.seed_all --model qwen3.6:27b-q4_K_M --dry-run
+
+# prompt 바뀌어서 전부 재시드
+python -m scripts.seed_all --model claude-sonnet-4-5 --force --continue
 ```
+
+옵션:
+- `--filter GLOB` — coverage.json key 글로브 (`fnmatch`)
+- `--force` — 이미 채워진 페이지도 재시드 (`--overwrite` 전달)
+- `--continue` — 한 페이지 실패 시 중단 대신 다음으로
+- `--dry-run` — 호출할 명령만 stdout 출력
+- 백엔드 / `--profile` 은 `config/llm.local.json`의 `default_profile`에서 가져옴 — seed_all은 env vars를 건드리지 않음
+- Ctrl+C로 깔끔하게 중단되며 누적 통계 출력
 
 ollama BF16/q4로는 페이지당 수십 분 ~ 1시간 — 200+ 페이지 batch는 야간 실행 전제. Anthropic Sonnet은 페이지당 ~2분, 비용 ≈ 페이지당 $0.30 수준 (mlme.c 같은 큰 파일 기준).
 
@@ -237,6 +244,7 @@ python -m scripts.update_wiki query \
 | LLM 오프라인 검증 | `python -m scripts.llm_client --selftest` |
 | Stub 페이지 일괄 생성 | `bash scripts/seed_pages.sh [--dry-run] [--force] [--per-file]` |
 | **페이지 시드 (agentic)** | `python -m scripts.update_wiki seed-agent --page P --model M [--max-turns N] [--overwrite]` |
+| **페이지 시드 batch** | `python -m scripts.seed_all --model M [--filter GLOB] [--force] [--continue] [--dry-run]` |
 | 영향 페이지 라우팅 | `python -m scripts.patch_router --files F1 F2 [--apply] --out r.json` |
 | 패치 → 페이지 갱신 | `python -m scripts.update_wiki update --routing r.json` |
 | 코드 리뷰 쿼리 | `python -m scripts.update_wiki query --template code-review --input P.diff --pages P1,P2 --out queries/X.md` |
