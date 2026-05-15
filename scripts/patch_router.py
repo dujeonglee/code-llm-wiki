@@ -1,6 +1,6 @@
-"""Route changed kernel files to the wiki pages that own them.
+"""Route changed source files to the wiki pages that own them.
 
-Reads a manifest (from ``sync_kernel.py``) plus the coverage index, and
+Reads a manifest (from ``sync_subtree.py``) plus the coverage index, and
 prints which pages need re-syncing and which files no page currently covers.
 
 Usage
@@ -8,14 +8,15 @@ Usage
 
 ::
 
-    # pipe from sync_kernel
-    python -m scripts.sync_kernel --no-fetch | python -m scripts.patch_router
+    # pipe from sync_subtree
+    python -m scripts.sync_subtree --tree raw/pcie_scsc --no-fetch \\
+        | python -m scripts.patch_router
 
     # or from a saved manifest
     python -m scripts.patch_router --manifest /tmp/m.json
 
     # or ad-hoc with explicit file list (useful for tests / demos)
-    python -m scripts.patch_router --files mm/slab.c net/core/dev.c
+    python -m scripts.patch_router --files pcie_scsc/mlme.c pcie_scsc/hip.c
 
 Flags
 -----
@@ -43,8 +44,8 @@ def _read_manifest(args: argparse.Namespace) -> dict:
     data = sys.stdin.read()
     if not data.strip():
         raise SystemExit(
-            "No manifest input. Pipe sync_kernel output, or pass --manifest "
-            "or --files."
+            "No manifest input. Pipe sync_subtree output, or pass "
+            "--manifest or --files."
         )
     return json.loads(data)
 

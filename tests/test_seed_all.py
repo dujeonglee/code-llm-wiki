@@ -12,7 +12,7 @@ from scripts.seed_all import _build_cmd, _select_pages
 
 
 def _cov(pages: dict) -> dict:
-    return {"pages": pages, "last_kernel_sha": None, "schema_version": 1}
+    return {"pages": pages, "subtree_shas": {}, "schema_version": 2}
 
 
 class SelectPages(unittest.TestCase):

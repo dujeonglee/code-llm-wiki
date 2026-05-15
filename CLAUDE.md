@@ -57,8 +57,8 @@ sources:             # 페이지 작성 시 LLM이 실제로 읽은 파일들 + 
 
 ### 3.2 패치 트리거 업데이트
 
-1. raw sub-tree에서 변경분 가져오기 (예: `cd raw/<top> && git pull`). `scripts/sync_kernel.py`는 raw/linux 전용 레거시 — 다른 sub-tree에 쓰려면 별도 일반화 필요.
-2. `scripts/patch_router.py`가 `git diff` → 변경된 파일 → `coverage.json`을 통해 **영향받는 위키 페이지 목록**을 만든다.
+1. `scripts/sync_subtree.py --tree raw/<top> --record`가 sub-tree의 git fetch + 변경 파일 매니페스트 emit + `coverage.subtree_shas[<top>]`에 새 HEAD 기록.
+2. `scripts/patch_router.py`가 매니페스트 → 변경된 파일 → `coverage.json`을 통해 **영향받는 위키 페이지 목록**을 만든다.
 3. `python -m scripts.update_wiki update --routing r.json`이 각 영향 페이지마다:
    - 페이지 현재 본문 + diff hunk + 인접 소스 파일 일부를 컨텍스트로 LLM 호출
    - LLM은 페이지를 **부분 갱신**한다 (전면 재작성이 아니라 변경된 부분만)

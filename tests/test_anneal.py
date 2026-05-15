@@ -27,7 +27,7 @@ class _IsolatedWiki:
         self.wiki_root = root / "wiki"
         self.kernel_dir = root / "kernel"
         self.cov_path.write_text(json.dumps({
-            "schema_version": 1, "last_kernel_sha": None, "pages": {}}))
+            "schema_version": 2, "subtree_shas": {}, "pages": {}}))
         self.todo_path.write_text("# todo\n")
         self._orig = {
             "WIKI_ROOT": _meta_io.WIKI_ROOT,
@@ -64,7 +64,17 @@ class _IsolatedWiki:
         path.write_text(_meta_io.serialize_page(fm, body))
 
     def _seed_coverage(self, pages: dict, kernel_sha: str | None = None):
-        cov = Coverage(last_kernel_sha=kernel_sha, pages=pages)
+        # Helper: when `kernel_sha` is given, apply it as the subtree sha for
+        # every distinct sub-tree inferred from each page's covers. Tests
+        # use single-subtree page sets so this collapses to one entry.
+        subtree_shas: dict[str, str] = {}
+        if kernel_sha:
+            for entry in pages.values():
+                covers = entry.get("covers") or []
+                if covers:
+                    top = covers[0].split("/", 1)[0]
+                    subtree_shas[top] = kernel_sha
+        cov = Coverage(subtree_shas=subtree_shas, pages=pages)
         cov.save(self.cov_path)
 
 
@@ -261,14 +271,14 @@ class ApplyTests(_IsolatedWiki, unittest.TestCase):
         for i, days in enumerate([15, 30, 60]):
             rel = f"p{i}.md"
             self._write_page(rel, {
-                "title": f"P{i}", "kind": "subsystem", "covers": [],
+                "title": f"P{i}", "kind": "subsystem", "covers": ["mm/*.c"],
                 "last_synced_sha": "old", "last_synced": _days_ago_iso(days),
             })
             cov = Coverage.load(self.cov_path)
-            cov.pages[rel] = {"kind": "subsystem", "covers": [],
+            cov.pages[rel] = {"kind": "subsystem", "covers": ["mm/*.c"],
                               "last_synced_sha": "old",
                               "last_synced": _days_ago_iso(days)}
-            cov.last_kernel_sha = "new"
+            cov.subtree_shas["mm"] = "new"
             cov.save(self.cov_path)
         rc = anneal._main([
             "run", "--budget", "1", "--mock-llm",

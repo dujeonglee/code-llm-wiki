@@ -63,6 +63,47 @@ class FrontMatterTests(unittest.TestCase):
         self.assertEqual(body, text)
 
 
+class CoverageSchema(unittest.TestCase):
+    """Schema v1 → v2 migration on Coverage.load()."""
+
+    def setUp(self):
+        self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "coverage.json"
+
+    def test_load_v1_drops_last_kernel_sha_and_starts_empty_subtree_shas(self):
+        self.path.write_text(json.dumps({
+            "schema_version": 1,
+            "last_kernel_sha": "wiki-repo-head-from-buggy-old-cmd",
+            "pages": {"raw/foo/x.md": {"covers": ["foo/x.c"]}},
+        }))
+        cov = _meta_io.Coverage.load(self.path)
+        self.assertEqual(cov.schema_version, 2)
+        self.assertEqual(cov.subtree_shas, {})
+        # pages preserved verbatim.
+        self.assertIn("raw/foo/x.md", cov.pages)
+        # old field gone after re-save.
+        cov.save(self.path)
+        on_disk = json.loads(self.path.read_text())
+        self.assertEqual(on_disk["schema_version"], 2)
+        self.assertNotIn("last_kernel_sha", on_disk)
+        self.assertIn("subtree_shas", on_disk)
+
+    def test_round_trip_preserves_subtree_shas(self):
+        self.path.write_text(json.dumps({
+            "schema_version": 2,
+            "subtree_shas": {"pcie_scsc": "abc123", "linux": "def456"},
+            "pages": {},
+        }))
+        cov = _meta_io.Coverage.load(self.path)
+        self.assertEqual(cov.subtree_shas["pcie_scsc"], "abc123")
+        self.assertEqual(cov.subtree_shas["linux"], "def456")
+        cov.save(self.path)
+        on_disk = json.loads(self.path.read_text())
+        self.assertEqual(on_disk["subtree_shas"]["pcie_scsc"], "abc123")
+        self.assertEqual(on_disk["subtree_shas"]["linux"], "def456")
+
+
 class ExtractorTests(unittest.TestCase):
     def test_fenced_block(self):
         resp = ("Sure! Here is the page:\n\n```markdown\n"
@@ -107,7 +148,7 @@ class _IsolatedWiki:
         root = Path(self.tmp.name)
         (root / "wiki" / "_meta").mkdir(parents=True)
         (root / "wiki" / "_meta" / "coverage.json").write_text(json.dumps({
-            "schema_version": 1, "last_kernel_sha": None, "pages": {}}))
+            "schema_version": 2, "subtree_shas": {}, "pages": {}}))
         (root / "wiki" / "_meta" / "todo.md").write_text("# todo\n")
         self._orig = {
             "WIKI_ROOT": _meta_io.WIKI_ROOT,
@@ -151,7 +192,7 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
         )
         # pre-populate coverage so the update path's setdefault works
         cov = _meta_io.Coverage.load()
-        cov.last_kernel_sha = "deadbeef"
+        cov.subtree_shas["mm"] = "deadbeef"
         cov.pages[page_rel] = {
             "kind": "subsystem",
             "covers": ["mm/*.c"],
@@ -184,7 +225,7 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
         self.assertIn("- mm/*.c", updated)  # covers preserved
 
         cov2 = json.loads(_meta_io.COVERAGE_PATH.read_text())
-        self.assertEqual(cov2["last_kernel_sha"], "cafef00d")
+        self.assertEqual(cov2["subtree_shas"]["mm"], "cafef00d")
         self.assertEqual(cov2["pages"][page_rel]["last_synced_sha"],
                          "cafef00d")
         self.assertEqual(cov2["pages"][page_rel]["covers"], ["mm/*.c"])
@@ -208,7 +249,7 @@ class UpdateTests(_IsolatedWiki, unittest.TestCase):
             "\nbody\n"
         )
         cov = _meta_io.Coverage.load()
-        cov.last_kernel_sha = "deadbeef"
+        cov.subtree_shas["mm"] = "deadbeef"
         cov.pages[page_rel] = {"kind": "subsystem", "covers": ["mm/*.c"],
                                "last_synced_sha": "deadbeef",
                                "last_synced": "2026-05-01T00:00:00Z"}
@@ -273,7 +314,7 @@ class QueryTests(_IsolatedWiki, unittest.TestCase):
             "---\ntitle: MM\nkind: subsystem\ncovers: [mm/*.c]\n"
             "last_synced_sha: deadbeef\n---\n\nmm body\n")
         cov = _meta_io.Coverage.load()
-        cov.last_kernel_sha = "deadbeef"
+        cov.subtree_shas["mm"] = "deadbeef"
         cov.pages["subsystems/mm.md"] = {
             "kind": "subsystem", "covers": ["mm/*.c"],
             "last_synced_sha": "deadbeef", "last_synced": None,

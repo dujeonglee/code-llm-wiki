@@ -187,9 +187,9 @@ p = pathlib.Path(cov_path)
 if p.exists():
     cov = json.loads(p.read_text())
 else:
-    cov = {"schema_version": 1, "last_kernel_sha": None, "pages": {}}
-cov.setdefault("schema_version", 1)
-cov.setdefault("last_kernel_sha", None)
+    cov = {"schema_version": 2, "subtree_shas": {}, "pages": {}}
+cov.setdefault("schema_version", 2)
+cov.setdefault("subtree_shas", {})
 cov.setdefault("pages", {})
 
 added = merged = 0

@@ -37,7 +37,8 @@ Examples
         --page raw/pcie_scsc/mlme.md --model qwen3.6:27b-q4_K_M
 
     # patch-driven update from a routing decision
-    python -m scripts.sync_kernel | python -m scripts.patch_router --out r.json
+    python -m scripts.sync_subtree --tree raw/pcie_scsc --record \\
+        | python -m scripts.patch_router --out r.json
     python -m scripts.update_wiki update --routing r.json
 """
 from __future__ import annotations
@@ -406,11 +407,20 @@ def run_update(routing: dict[str, Any], *, kernel_dir: Path,
         })
         written += 1
 
-    if not dry_run and to_sha:
-        cov.last_kernel_sha = to_sha
+    if not dry_run and to_sha and pages:
+        # Derive the sub-tree from the first updated page's covers and mark
+        # it synced to `to_sha`. All pages in one routing batch share a
+        # sub-tree (patch_router consumes one sync_subtree manifest at a
+        # time), so picking the first is sufficient. Pure string derivation
+        # — no filesystem check — so the sha records even when raw/<top>/
+        # isn't present on this machine.
+        first_covers = cov.pages.get(pages[0], {}).get("covers") or []
+        if first_covers:
+            top = first_covers[0].split("/", 1)[0]
+            if top:
+                cov.subtree_shas[top] = to_sha
         cov.save()
-    print(f"[update] {written}/{len(pages)} pages updated, "
-          f"last_kernel_sha := {to_sha}")
+    print(f"[update] {written}/{len(pages)} pages updated, to_sha={to_sha}")
     return written, len(pages)
 
 
@@ -553,7 +563,12 @@ def cmd_query(args: argparse.Namespace) -> int:
          if cov.pages.get(p, {}).get("covers")),
         [],
     )
-    kernel_sha = _git_head(_resolve_subtree(first_covers)) or cov.last_kernel_sha
+    # Try live sub-tree HEAD first, then the last recorded sub-tree sha from
+    # coverage.subtree_shas (set by sync_subtree --record or update_wiki update).
+    kernel_sha = _git_head(_resolve_subtree(first_covers))
+    if not kernel_sha and first_covers:
+        top = first_covers[0].split("/", 1)[0]
+        kernel_sha = cov.subtree_shas.get(top)
 
     # Build the task-specific user message.
     if args.template == "code-review":

@@ -1,25 +1,32 @@
 """Shared I/O for ``wiki/_meta/`` artifacts.
 
 The coverage index is the single source of truth for "which wiki page owns
-which raw source paths". Both the patch router (D2) and the wiki updater
-(D3) read it; the wiki updater writes it. Schema:
-
-::
+which raw source paths" and "where each sub-tree was last synced". Both the
+patch router and the wiki updater read it; the wiki updater + sync_subtree
+write it. Schema (v2)::
 
     {
-      "schema_version": 1,
-      "last_kernel_sha": "abc123" | null,
+      "schema_version": 2,
+      "subtree_shas": {            # last-seen HEAD per raw/<top>/ sub-tree
+        "pcie_scsc": "abc123",
+        "linux":     "def456"
+      },
       "pages": {
-        "subsystems/mm.md": {
+        "raw/pcie_scsc/mlme.md": {
           "kind": "subsystem" | "concept" | "entity" | "query",
-          "covers": ["mm/*.c", "mm/slab*", "mm/Documentation/*"],
+          "covers": ["pcie_scsc/mlme.c", "pcie_scsc/*.h"],
           "last_synced_sha": "abc123" | null,
-          "last_synced": "2026-05-10T12:00:00Z" | null
+          "last_synced": "2026-05-15T12:00:00Z" | null
         }
       }
     }
 
-Glob semantics (POSIX-style paths, relative to ``raw/linux/``):
+v1 had a single global ``last_kernel_sha`` — incompatible with the
+``raw/<top>/`` multi-sub-tree model. Loading a v1 file is supported for one
+hop: the old field is dropped and ``subtree_shas`` starts empty; the next
+``sync_subtree --record`` populates it.
+
+Glob semantics (POSIX-style paths, relative to ``KERNEL_ROOT`` = ``raw/``):
 
 * ``*``  matches anything except ``/``
 * ``**`` matches any number of path segments (including zero)
@@ -48,10 +55,13 @@ KERNEL_ROOT = REPO_ROOT / "raw"
 # Coverage I/O
 # ---------------------------------------------------------------------------
 
+SCHEMA_VERSION = 2
+
+
 @dataclass
 class Coverage:
-    schema_version: int = 1
-    last_kernel_sha: str | None = None
+    schema_version: int = SCHEMA_VERSION
+    subtree_shas: dict[str, str] = field(default_factory=dict)
     pages: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
@@ -60,17 +70,19 @@ class Coverage:
         p = path if path is not None else _module_coverage_path()
         with p.open() as f:
             data = json.load(f)
+        # v1 → v2: legacy `last_kernel_sha` is dropped silently. The next
+        # `sync_subtree --record` repopulates `subtree_shas` correctly.
         return cls(
-            schema_version=data.get("schema_version", 1),
-            last_kernel_sha=data.get("last_kernel_sha"),
+            schema_version=SCHEMA_VERSION,
+            subtree_shas=data.get("subtree_shas", {}),
             pages=data.get("pages", {}),
         )
 
     def save(self, path: Path | None = None) -> None:
         p = path if path is not None else _module_coverage_path()
         payload = {
-            "schema_version": self.schema_version,
-            "last_kernel_sha": self.last_kernel_sha,
+            "schema_version": SCHEMA_VERSION,
+            "subtree_shas": self.subtree_shas,
             "pages": self.pages,
         }
         p.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")

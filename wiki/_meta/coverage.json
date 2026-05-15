@@ -1,5 +1,4 @@
 {
-  "last_kernel_sha": "114fcc4f30d1fd1be45c63ce19dac706e0d18fb5",
   "pages": {
     "raw/pcie_scsc/acm_api.md": {
       "covers": [
@@ -1721,5 +1720,6 @@
       "last_synced_sha": null
     }
   },
-  "schema_version": 1
+  "schema_version": 2,
+  "subtree_shas": {}
 }

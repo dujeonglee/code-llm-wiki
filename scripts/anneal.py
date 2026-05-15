@@ -25,7 +25,7 @@ Scoring (higher = more urgent):
 * coverage_drift  100 + 10 * (# dead covers)
 * broken_link      50 + 10 * (# broken targets)
 * stale_page         max(0, days_since_sync - max_age)
-                   + 30 if last_synced_sha != coverage.last_kernel_sha
+                   + 30 if last_synced_sha != coverage.subtree_shas[<top>]
 
 Only ``stale_page``, ``broken_link``, and ``coverage_drift`` are auto-repaired
 in D4. ``uncovered`` items are reported only — auto-seeding them would
@@ -78,6 +78,15 @@ class Candidate:
 # ---------------------------------------------------------------------------
 
 WIKI_LINK_RE = re.compile(r"\[\[([^\]|#]+)(?:\|[^\]]*)?\]\]")
+
+
+def _subtree_top(covers: list[str]) -> str | None:
+    """Return the shared first path segment of covers, or None when they
+    span multiple sub-trees / are empty. Mirrors update_wiki._resolve_subtree
+    semantics but yields just the <top> string (not a Path).
+    """
+    segs = {c.split("/", 1)[0] for c in covers if c}
+    return segs.pop() if len(segs) == 1 else None
 
 
 def _iter_wiki_pages(wiki_root: Path) -> list[str]:
@@ -150,10 +159,13 @@ def scan_candidates(coverage: Coverage, wiki_root: Path, kernel_dir: Path,
                 details={"dead_covers": dead, "kernel_present": True},
             ))
 
-        # stale_page
+        # stale_page — compare the page's last_synced_sha against the
+        # last-known HEAD of its sub-tree (coverage.subtree_shas[<top>]).
         days = _days_since(entry.get("last_synced"))
-        sha_lag = (entry.get("last_synced_sha") !=
-                   coverage.last_kernel_sha and coverage.last_kernel_sha)
+        top = _subtree_top(covers)
+        subtree_sha = coverage.subtree_shas.get(top) if top else None
+        sha_lag = (subtree_sha
+                   and entry.get("last_synced_sha") != subtree_sha)
         if (days is not None and days > max_age_days) or sha_lag:
             score = max(0, (days or 0) - max_age_days) + (30 if sha_lag else 0)
             if score > 0:
@@ -164,7 +176,8 @@ def scan_candidates(coverage: Coverage, wiki_root: Path, kernel_dir: Path,
                     details={
                         "days_since_sync": days,
                         "page_sha": entry.get("last_synced_sha"),
-                        "kernel_sha": coverage.last_kernel_sha,
+                        "subtree": top,
+                        "subtree_sha": subtree_sha,
                     },
                 ))
 
@@ -229,12 +242,14 @@ def _refresh_stale_page(candidate: Candidate, coverage: Coverage, *,
                         mock_llm: bool, dry_run: bool,
                         max_diff_bytes: int) -> bool:
     """Run update_wiki.update on a single page, using its last_synced_sha as
-    'from' and coverage.last_kernel_sha as 'to'."""
+    'from' and the page's sub-tree HEAD as 'to'."""
     page_rel = candidate.page
     entry = coverage.pages.get(page_rel, {})
+    top = _subtree_top(entry.get("covers", []) or [])
+    subtree_sha = coverage.subtree_shas.get(top) if top else None
     routing = {
         "from": entry.get("last_synced_sha"),
-        "to": coverage.last_kernel_sha or entry.get("last_synced_sha"),
+        "to": subtree_sha or entry.get("last_synced_sha"),
         "n_files": 0,
         "affected_pages": [page_rel],
         "uncovered": [],

@@ -108,8 +108,8 @@ class RouteTests(unittest.TestCase):
         self.cov_path = tmp / "coverage.json"
         self.todo_path = tmp / "todo.md"
         self.cov_path.write_text(json.dumps({
-            "schema_version": 1,
-            "last_kernel_sha": "deadbeef",
+            "schema_version": 2,
+            "subtree_shas": {"mm": "deadbeef"},
             "pages": {
                 "subsystems/mm.md": {
                     "kind": "subsystem",
