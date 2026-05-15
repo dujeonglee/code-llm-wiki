@@ -14,32 +14,44 @@
 
 ## 아키텍처
 
-```
-External upstream(s)
-      │ git clone / pull
-      ▼
-   raw/<top>/                          ← 별도 local git, wiki repo의 .gitignore
-      │
-      │ (1) bash scripts/seed_pages.sh     ─── 새 sub-tree 1회
-      ▼
-   wiki/raw/<top>/*.md  (stub: 빈 front-matter + TODO)
-      │
-      │ (2) python -m scripts.update_wiki seed-agent  ─── 페이지별
-      │     ↳ claude-agent-sdk → Anthropic / ollama
-      │     ↳ Read/Grep 도구로 raw/ 탐색 후 SOP 형식으로 작성
-      ▼
-   wiki/raw/<top>/*.md  (LLM이 채움, last_synced_sha = sub-tree git HEAD)
-      │
-      │ (3) raw/<top> git pull → patch_router → update_wiki update
-      │     ↳ scripts/llm_client.py (one-shot HTTP)
-      │     ↳ diff hunk + 인접 파일 일부 → 페이지 부분 갱신
-      ▼
-   wiki/raw/<top>/*.md  (변경 시마다 patch-up)
+```mermaid
+flowchart TD
+    upstream([External upstream])
+    raw[("raw/&lt;top&gt;/<br/>local git, gitignored")]
+    stub["wiki/raw/&lt;top&gt;/*.md<br/>stub"]
+    filled["wiki/raw/&lt;top&gt;/*.md<br/>filled"]
+    cov[("wiki/_meta/coverage.json")]
+    queries["wiki/queries/*.md<br/>audit trail"]
+    site["site/*.html<br/>file://"]
 
-   scripts/anneal.py (cron)   — 오래된 페이지 / 끊긴 link / drift 수리
-   wiki/queries/              — code-review / porting / feature-impl 산출물
-   site/                      — mkdocs HTML (file:// 로 그냥 열기)
+    upstream -. "git clone / pull" .-> raw
+
+    raw -->|"(1) scripts/seed_pages.sh"| stub
+    raw -->|"page → covers 매핑"| cov
+
+    stub -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
+
+    raw -->|"(3) git pull →<br/>patch_router (cov 사용) →<br/>update_wiki update<br/>llm_client (one-shot HTTP)"| filled
+
+    filled -->|"(4) anneal.py (cron)<br/>stale / broken-link / drift 수리"| filled
+
+    filled -.->|"(5) update_wiki query<br/>code-review / porting / feature-impl"| queries
+
+    filled -->|"build_site.py · mkdocs"| site
+
+    classDef immutable fill:#fef3c7,stroke:#a16207,color:#000
+    classDef llm fill:#dbeafe,stroke:#1e40af,color:#000
+    classDef artifact fill:#dcfce7,stroke:#15803d,color:#000
+
+    class upstream,raw immutable
+    class stub,filled,cov,queries llm
+    class site artifact
 ```
+
+- **노란색** — 사용자 소유, 불변.
+- **파란색** — LLM이 만들고 유지하는 파일들. wiki repo의 일부.
+- **초록색** — 빌드 산출물 (gitignored).
+- 점선 — 1회성 / 비주기 이벤트 (clone, query). 실선 — 자동화에 자주 등장하는 흐름.
 
 | 레이어 | 소유 | 역할 |
 |---|---|---|
