@@ -131,6 +131,59 @@ def _resolve_auth(profile: dict[str, Any]) -> str | None:
     )
 
 
+def sdk_env_for_profile(name: str | None = None) -> dict[str, str]:
+    """Translate an llm.json profile into env vars for claude-agent-sdk.
+
+    The wiki repo's config is the single source of truth for which backend
+    seed-agent (and any other SDK-using script) talks to; callers should
+    write the returned dict into ``os.environ`` before invoking the SDK.
+
+    Mapping
+    -------
+
+    ``provider == "anthropic"`` — Anthropic cloud. Returns::
+
+        {"ANTHROPIC_API_KEY": <value of profile.auth_env in os.environ>}
+
+    ``provider == "openai"`` — Anthropic-compatible backend (ollama v0.14+,
+    LiteLLM, etc.). Returns::
+
+        {"ANTHROPIC_BASE_URL": <profile.base_url with trailing /v1 stripped>,
+         "ANTHROPIC_AUTH_TOKEN": <profile.auth_env value, or "ollama" if
+                                  auth_optional and the env var is unset>}
+
+    Raises :class:`LLMError` for any other provider or if a required env
+    var is missing.
+    """
+    profile = get_profile(name)
+    provider = profile["provider"]
+    if provider == "anthropic":
+        key = _resolve_auth(profile)
+        if not key:
+            raise LLMError(
+                f"Profile '{profile['_name']}' has no API key resolved "
+                f"(set {profile.get('auth_env')!r} in the environment)."
+            )
+        return {"ANTHROPIC_API_KEY": key}
+    if provider == "openai":
+        base = profile["base_url"].rstrip("/")
+        if base.endswith("/v1"):
+            base = base[:-3]
+        env = {"ANTHROPIC_BASE_URL": base}
+        token = _resolve_auth(profile)
+        if token:
+            env["ANTHROPIC_AUTH_TOKEN"] = token
+        else:
+            # The SDK requires ANTHROPIC_AUTH_TOKEN to be set even when the
+            # backend (e.g. ollama) ignores its value.
+            env["ANTHROPIC_AUTH_TOKEN"] = "ollama"
+        return env
+    raise LLMError(
+        f"Profile '{profile['_name']}' has provider={provider!r}; "
+        "only 'anthropic' and 'openai' are supported by sdk_env_for_profile."
+    )
+
+
 # ---------------------------------------------------------------------------
 # HTTP
 # ---------------------------------------------------------------------------

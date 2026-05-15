@@ -208,6 +208,7 @@ def cmd_seed_agent(args: argparse.Namespace) -> int:
 
 
 async def _cmd_seed_agent_async(args: argparse.Namespace) -> int:
+    import os
     try:
         from claude_agent_sdk import (
             AssistantMessage,
@@ -219,6 +220,18 @@ async def _cmd_seed_agent_async(args: argparse.Namespace) -> int:
         print(f"[seed-agent] missing dependency: {e}", file=sys.stderr)
         print("Install: pip install claude-agent-sdk", file=sys.stderr)
         return 4
+
+    # The wiki repo's llm config is the single source of truth for which
+    # backend the SDK talks to. Translate the active profile into env vars
+    # and write them into the current process env, overriding any pre-set
+    # shell vars so behaviour is reproducible across machines.
+    try:
+        sdk_env = llm_client.sdk_env_for_profile(args.profile)
+    except llm_client.LLMError as e:
+        print(f"[seed-agent] backend resolution failed: {e}", file=sys.stderr)
+        return 4
+    for k, v in sdk_env.items():
+        os.environ[k] = v
 
     page_rel = args.page
     if not page_rel.endswith(".md"):

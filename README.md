@@ -53,7 +53,9 @@ External upstream(s)
 
 ---
 
-## Quickstart (콜드 스타트부터 첫 페이지까지)
+## Quickstart
+
+**전제**: `raw/<top>/`에 소스 sub-tree가 이미 클론/배치되어 있다고 가정합니다 (예: `raw/pcie_scsc/`). 클론 자체는 이 wiki repo의 일이 아니므로 — `git clone <upstream> raw/<top>` 든, 압축 풀어 `cp -r ... raw/<top>/` 든 사용자가 미리 처리.
 
 ### 0. 일회 셋업
 
@@ -67,51 +69,57 @@ cp config/llm.example.json config/llm.local.json
 ${EDITOR:-vi} config/llm.local.json            # default_profile, model 조정
 ```
 
-LLM 백엔드 두 갈래 — 둘 중 하나만 골라도 OK:
+LLM 백엔드는 `config/llm.local.json`의 프로필로 선택합니다 — 셸 env vars로 강제하지 않음. 둘 중 하나만 활성화하면 됩니다:
 
-| 백엔드 | 환경변수 | 모델 예 |
-|---|---|---|
-| **Anthropic 클라우드** | `ANTHROPIC_API_KEY=sk-ant-...` | `claude-sonnet-4-5`, `claude-opus-4-7` |
-| **로컬 ollama** | `ANTHROPIC_BASE_URL=http://localhost:11434`<br>`ANTHROPIC_AUTH_TOKEN=ollama` (값 무시, set만 필요) | `qwen3.6:27b-q4_K_M`, 등 — `ollama pull` 한 모델 |
+| 백엔드 | 프로필 (`provider`) | 필요한 셸 env | 모델 예 |
+|---|---|---|---|
+| **Anthropic 클라우드** | `claude` (`anthropic`) | `ANTHROPIC_API_KEY=sk-ant-...` (auth_env로 지정한 변수) | `claude-sonnet-4-5`, `claude-opus-4-7` |
+| **로컬 ollama** (v0.14+) | `ollama` (`openai`) | 없음 (`auth_optional: true`) | `qwen3.6:27b-q4_K_M` 등 — `ollama pull` 한 모델 |
+
+기본 프로필은 `config/llm.local.json`의 `default_profile` 한 줄로 정합니다:
+```json
+{ "default_profile": "ollama", "profiles": { ... } }
+```
+
+`update_wiki seed-agent` 호출 시 활성 프로필에서 SDK가 요구하는 env vars(`ANTHROPIC_BASE_URL` / `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_API_KEY`)를 자동 유도해 설정합니다 — wiki repo 설정이 셸 env를 덮어씁니다.
 
 연결 검증:
 ```bash
-python -m scripts.llm_client --probe                 # 기본 프로필
-python -m scripts.llm_client --selftest              # 오프라인 검증 (키 불요)
+python -m scripts.llm_client --probe                       # default_profile
+python -m scripts.llm_client --probe --profile ollama      # 특정 프로필
+python -m scripts.llm_client --selftest                    # 오프라인 검증 (키 불요)
 ```
 
-### 1. 새 sub-tree 들이기
+### 1. sub-tree git 확인
+
+`raw/<top>/`이 자체 git 저장소여야 페이지의 `last_synced_sha`가 sub-tree HEAD로 기록됩니다 (없으면 sha는 `null` — 오류 아니지만 변경 추적이 약해짐).
 
 ```bash
-# upstream에서 clone 또는 로컬 코드를 그대로 두고:
-mkdir -p raw/<top>
-cp -r /path/to/source/* raw/<top>/
-
-# raw/<top>/을 별도 git으로 — 페이지의 last_synced_sha 기록 위해
-cd raw/<top>
-git init && git add . && git commit -m "initial import"
-cd -
+# upstream에서 git clone 했으면 자동으로 OK. 아니라면:
+[ -d raw/<top>/.git ] || (cd raw/<top> && git init && git add . && git commit -m "initial import")
 ```
 
 ### 2. Stub 페이지 일괄 생성
 
 ```bash
-bash scripts/seed_pages.sh                  # 또는 --dry-run으로 먼저
+bash scripts/seed_pages.sh --dry-run            # 먼저 미리보기
+bash scripts/seed_pages.sh                      # 실제 생성
 ```
 
-`.c`/`.h` 짝 단위로 `wiki/raw/<top>/*.md` 스텁 생성 + `coverage.json`에 등록. idempotent.
+`.c`/`.h` 짝 단위로 `wiki/raw/<top>/*.md` 스텁 생성 + `coverage.json`에 등록. idempotent (재실행해도 기존 페이지 보존). 다른 확장자(`.py`/`.go` 등) sub-tree로 쓸 일이 있으면 `seed_pages.sh`의 `find` 패턴 손보면 됩니다.
 
 ### 3. 페이지 채우기 (agentic seed)
 
-```bash
-# Anthropic 클라우드
-ANTHROPIC_API_KEY=sk-ant-... python -m scripts.update_wiki seed-agent \
-    --page raw/<top>/<name>.md --model claude-sonnet-4-5
+먼저 작은 페이지 한 장으로 워크플로 검증 권장:
 
-# 또는 로컬 ollama
-ANTHROPIC_BASE_URL=http://localhost:11434 ANTHROPIC_AUTH_TOKEN=ollama \
+```bash
+# default_profile 사용 (config/llm.local.json)
 python -m scripts.update_wiki seed-agent \
-    --page raw/<top>/<name>.md --model qwen3.6:27b-q4_K_M
+    --page raw/<top>/<small_file>.md --model claude-sonnet-4-5
+
+# 또는 특정 프로필
+python -m scripts.update_wiki seed-agent --profile ollama \
+    --page raw/<top>/<small_file>.md --model qwen3.6:27b-q4_K_M
 ```
 
 내부 동작: Claude Agent SDK가 `Read`/`Grep` 도구로 raw/<top>/을 탐색하면서 SOP 형식의 페이지 한 장을 작성 → 마지막 ```` ```markdown ``` ```` 블록을 추출해 페이지에 씀 + `coverage.json` 갱신.
@@ -124,14 +132,35 @@ python -m scripts.update_wiki seed-agent \
 
 ```bash
 python -m scripts.build_site --clean
-open site/raw/<top>/<name>.html             # macOS
-xdg-open site/raw/<top>/<name>.html         # Linux
+open site/raw/<top>/<small_file>.html        # macOS
+xdg-open site/raw/<top>/<small_file>.html    # Linux
 ```
 
 검색 기능까지 쓰려면 (file:// 정책상 검색 동작 안 함):
 ```bash
 python -m scripts.build_site --serve --bind 127.0.0.1:8000
 ```
+
+### 5. 나머지 페이지로 확장
+
+워크플로가 잘 도는 것 확인했으면 큰 페이지나 batch로:
+
+```bash
+# coverage.json의 모든 미채움 페이지 순회 (예시)
+python -c "
+import json, subprocess
+cov = json.load(open('wiki/_meta/coverage.json'))
+for page, entry in sorted(cov['pages'].items()):
+    if entry.get('last_synced'):  # 이미 채워진 것 skip
+        continue
+    print('[batch]', page)
+    subprocess.run(['python', '-m', 'scripts.update_wiki', 'seed-agent',
+                    '--page', page, '--model', 'qwen3.6:27b-q4_K_M'],
+                   check=True)
+"
+```
+
+ollama BF16/q4로는 페이지당 수십 분 ~ 1시간 — 200+ 페이지 batch는 야간 실행 전제. Anthropic Sonnet은 페이지당 ~2분, 비용 ≈ 페이지당 $0.30 수준 (mlme.c 같은 큰 파일 기준).
 
 ---
 

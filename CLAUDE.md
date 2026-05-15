@@ -50,9 +50,9 @@ sources:             # 페이지 작성 시 LLM이 실제로 읽은 파일들 + 
    python -m scripts.update_wiki seed-agent \
      --page raw/<top>/<file>.md --model <model>
    ```
-   Claude Agent SDK가 `Read`/`Grep`으로 sub-tree를 탐색하고 SOP 형식의 페이지를 한 번에 작성한다.
-   - **Anthropic 클라우드**: `--model claude-sonnet-4-5` (기본 환경변수만으로 작동).
-   - **ollama 로컬**: `ANTHROPIC_BASE_URL=http://localhost:11434` + `ANTHROPIC_AUTH_TOKEN=ollama` (값 무시되지만 set 필요) + `--model qwen3.6:27b-q4_K_M` 같은 ollama 모델명.
+   Claude Agent SDK가 `Read`/`Grep`으로 sub-tree를 탐색하고 SOP 형식의 페이지를 한 번에 작성한다. 백엔드(클라우드 / ollama / 기타 Anthropic-compat 프록시)는 `config/llm.local.json`의 `default_profile` 또는 `--profile` 플래그로 선택 — SDK 환경변수는 `scripts/llm_client.sdk_env_for_profile()`이 자동 set한다.
+   - **Anthropic 클라우드**: `claude` 프로필. `--model claude-sonnet-4-5` 등. `ANTHROPIC_API_KEY` 셸에 있어야 함 (profile.auth_env로 지정).
+   - **ollama 로컬**: `ollama` 프로필. `--model qwen3.6:27b-q4_K_M` 같은 ollama 모델명. 키 불필요.
 4. 이미 채워진 페이지(`last_synced` 존재) 재시도는 `--overwrite` 명시.
 
 ### 3.2 패치 트리거 업데이트
@@ -104,8 +104,9 @@ LLM이 코드 리뷰 / 포팅 / 기능 추가에 위키를 활용할 때:
 
 ## 4. LLM 호출
 
-- `update` / `query` 서브커맨드는 `scripts/llm_client.py` (one-shot HTTP) 사용. 프로필은 `config/llm.json` (없으면 `config/llm.local.json`, 없으면 `config/llm.example.json`).
-- `seed-agent` 서브커맨드는 `claude-agent-sdk` (별도 `pip install`)를 사용해 agentic loop을 돈다. 백엔드 선택은 `ANTHROPIC_BASE_URL` / `ANTHROPIC_AUTH_TOKEN` 환경변수.
+- `update` / `query` 서브커맨드는 `scripts/llm_client.py` (one-shot HTTP) 사용.
+- `seed-agent` 서브커맨드는 `claude-agent-sdk` (별도 `pip install`)를 사용해 agentic loop을 돈다.
+- 두 경로 모두 `config/llm.local.json`의 프로필을 동일하게 읽음 (`default_profile` 또는 `--profile`). `seed-agent`는 활성 프로필에서 SDK가 필요로 하는 env vars (`ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_API_KEY`)를 `sdk_env_for_profile()`로 자동 set — 셸 env에 별도 export 불필요. wiki repo 설정이 단일 진실의 출처.
 
 ## 5. 금지 사항
 
