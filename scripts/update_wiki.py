@@ -66,19 +66,20 @@ from scripts._meta_io import (
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """\
-You maintain a Wikipedia-style code wiki for the Linux kernel, following the
-Karpathy LLM-Wiki pattern. Hard rules:
+You maintain a Wikipedia-style code wiki following the Karpathy LLM-Wiki
+pattern. The wiki documents one or more source sub-trees under `raw/<top>/`.
+Hard rules:
 
-1. The source tree at `raw/linux/` is IMMUTABLE. You are documenting it, not
+1. The source tree at `raw/<top>/` is IMMUTABLE. You are documenting it, not
    modifying it.
 2. Every page begins with YAML front-matter. The schema is:
 
        ---
        title: <human readable name>
        kind: subsystem | concept | entity | query
-       covers:                # globs, relative to raw/linux/
+       covers:                # globs, relative to KERNEL_ROOT (= raw/)
          - <path>
-       last_synced_sha: <kernel git sha or null>
+       last_synced_sha: <sub-tree git sha or null>
        last_synced: <ISO-8601 UTC datetime or null>
        sources:               # files you actually read; may include line refs
          - <path or path#Lstart-Lend>
@@ -189,6 +190,14 @@ Explore enough to identify: the module's purpose, its top-level entry points
 how it connects to neighboring modules (which functions it calls, who calls
 it). When ready, output the FULL page — front-matter + body — inside ONE
 ```markdown ... ``` fenced block, and nothing else after the fence.
+
+Wiki layout (IMPORTANT for [[wiki-links]]):
+Pages live at `wiki/raw/<top>/<basename>.md`, mirroring the raw/ tree exactly.
+The wiki for `raw/pcie_scsc/dev.c` is `wiki/raw/pcie_scsc/dev.md`. Link
+targets are page paths relative to `wiki/`, so a cross-link to that page is
+`[[raw/pcie_scsc/dev|dev]]` — NOT `[[dev]]`, NOT `[[pcie_scsc/dev]]`, and
+NOT `[[subsystems/dev]]`. Only link to pages you can verify exist (Read or
+Grep the wiki/raw/ tree if unsure); omit the link rather than invent one.
 """
 
 
