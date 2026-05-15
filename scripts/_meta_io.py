@@ -260,12 +260,17 @@ def now_iso() -> str:
 
 
 def extract_markdown_block(response: str) -> str:
-    """Pull the inner content of the first ```markdown ... ``` fence in an
-    LLM response. Falls back to the whole response stripped of any trailing
-    explanation if no fence is present.
+    """Pull the inner content of the outer ```markdown ... ``` fence in an
+    LLM response. Greedy on the closing fence so inner ```c / ```python code
+    blocks inside the page body don't truncate the match. The closing fence
+    must be at the start of a line followed by newline or EOF. Falls back to
+    the whole response stripped if no fence is present.
     """
-    fence = re.search(r"```(?:markdown|md)?\s*\n(.*?)```", response,
-                      flags=re.DOTALL)
+    fence = re.search(
+        r"```(?:markdown|md)?\s*\n(.*)\n```\s*(?:\n|\Z)",
+        response,
+        flags=re.DOTALL,
+    )
     if fence:
         return fence.group(1).rstrip() + "\n"
     return response.strip() + "\n"

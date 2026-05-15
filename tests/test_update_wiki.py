@@ -77,6 +77,26 @@ class ExtractorTests(unittest.TestCase):
         out = extract_markdown_block(resp)
         self.assertIn("title: T", out)
 
+    def test_inner_code_fence_does_not_truncate(self):
+        """Pages can contain ```c / ```python code blocks inside the body.
+        The outer ```markdown ... ``` must pair greedily, not stop at the
+        first inner ```.
+        """
+        resp = (
+            "```markdown\n"
+            "---\ntitle: T\n---\n\n"
+            "intro paragraph\n\n"
+            "```c\n"
+            "struct s { int x; };\n"
+            "```\n\n"
+            "more body after the code block\n"
+            "```\n"
+        )
+        out = extract_markdown_block(resp)
+        self.assertIn("intro paragraph", out)
+        self.assertIn("struct s", out)
+        self.assertIn("more body after the code block", out)
+
 
 class _IsolatedWiki:
     """Mixin: redirect wiki/_meta paths and WIKI_ROOT to a tempdir."""
@@ -100,8 +120,8 @@ class _IsolatedWiki:
         _meta_io.COVERAGE_PATH = root / "wiki" / "_meta" / "coverage.json"
         _meta_io.TODO_PATH = root / "wiki" / "_meta" / "todo.md"
         update_wiki.WIKI_ROOT = root / "wiki"
-        # Tests don't need a real raw tree; point KERNEL_ROOT at a missing dir
-        # so _list_kernel_files / _git_head return empty quietly.
+        # Tests don't need a real raw tree; point KERNEL_ROOT at a missing
+        # dir so _git_head / _resolve_subtree return None quietly.
         update_wiki.KERNEL_ROOT = root / "no-kernel-here"
 
     def tearDown(self):
@@ -110,47 +130,6 @@ class _IsolatedWiki:
         _meta_io.TODO_PATH = self._orig["TODO_PATH"]
         update_wiki.WIKI_ROOT = self._orig["uw_wiki"]
         update_wiki.KERNEL_ROOT = self._orig["uw_kernel"]
-
-
-class SeedTests(_IsolatedWiki, unittest.TestCase):
-    def test_seed_with_mock_llm_writes_page_and_coverage(self):
-        rc = update_wiki._main([
-            "seed",
-            "--page", "subsystems/mm.md",
-            "--kind", "subsystem",
-            "--covers", "mm/*.c", "mm/*.h",
-            "--mock-llm",
-        ])
-        self.assertEqual(rc, 0)
-        page = (_meta_io.WIKI_ROOT / "subsystems" / "mm.md").read_text()
-        self.assertIn("kind: subsystem", page)
-        self.assertIn("- mm/*.c", page)
-        self.assertIn("- mm/*.h", page)
-        self.assertIn("## Recent changes", page)
-        cov = json.loads(_meta_io.COVERAGE_PATH.read_text())
-        self.assertIn("subsystems/mm.md", cov["pages"])
-        self.assertEqual(cov["pages"]["subsystems/mm.md"]["covers"],
-                         ["mm/*.c", "mm/*.h"])
-
-    def test_seed_refuses_to_overwrite(self):
-        # first seed
-        update_wiki._main([
-            "seed", "--page", "x.md", "--kind", "concept",
-            "--covers", "a/*", "--mock-llm",
-        ])
-        # second seed without --overwrite should fail
-        rc = update_wiki._main([
-            "seed", "--page", "x.md", "--kind", "concept",
-            "--covers", "a/*", "--mock-llm",
-        ])
-        self.assertEqual(rc, 2)
-        # with --overwrite, succeeds
-        rc = update_wiki._main([
-            "seed", "--page", "x.md", "--kind", "concept",
-            "--covers", "a/*", "--mock-llm",
-            "--overwrite",
-        ])
-        self.assertEqual(rc, 0)
 
 
 class UpdateTests(_IsolatedWiki, unittest.TestCase):
@@ -395,7 +374,9 @@ class SubtreeRoutingTests(_IsolatedWiki, unittest.TestCase):
             update_wiki._resolve_subtree(["no_such_top/a.c"])
         )
 
-    def test_seed_records_subtree_head_not_parent_repo(self):
+    def test_git_head_returns_subtree_sha_when_git_repo_present(self):
+        """Per-subtree git resolution: _git_head against a real sub-tree
+        git returns that tree's HEAD, not the parent repo's."""
         kernel = Path(self.tmp.name) / "raw"
         sub = kernel / "foo"
         sub.mkdir(parents=True)
@@ -407,25 +388,16 @@ class SubtreeRoutingTests(_IsolatedWiki, unittest.TestCase):
         head = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=sub, text=True).strip()
         update_wiki.KERNEL_ROOT = kernel
-        rc = update_wiki._main([
-            "seed", "--page", "foo/x.md", "--kind", "entity",
-            "--covers", "foo/x.c", "--mock-llm",
-        ])
-        self.assertEqual(rc, 0)
-        page = (_meta_io.WIKI_ROOT / "foo" / "x.md").read_text()
-        self.assertIn(f"last_synced_sha: {head}", page)
+        resolved = update_wiki._resolve_subtree(["foo/x.c"])
+        self.assertEqual(resolved, sub)
+        self.assertEqual(update_wiki._git_head(resolved), head)
 
-    def test_seed_records_null_sha_when_subtree_is_not_git(self):
-        kernel = Path(self.tmp.name) / "raw"
-        (kernel / "foo").mkdir(parents=True)  # plain dir, no .git
-        update_wiki.KERNEL_ROOT = kernel
-        rc = update_wiki._main([
-            "seed", "--page", "foo/x.md", "--kind", "entity",
-            "--covers", "foo/x.c", "--mock-llm",
-        ])
-        self.assertEqual(rc, 0)
-        page = (_meta_io.WIKI_ROOT / "foo" / "x.md").read_text()
-        self.assertIn("last_synced_sha: null", page)
+    def test_git_head_returns_none_for_non_git_subtree(self):
+        update_wiki.KERNEL_ROOT = Path(self.tmp.name) / "raw"
+        (update_wiki.KERNEL_ROOT / "foo").mkdir(parents=True)
+        self.assertIsNone(
+            update_wiki._git_head(update_wiki._resolve_subtree(["foo/x.c"]))
+        )
 
 
 if __name__ == "__main__":

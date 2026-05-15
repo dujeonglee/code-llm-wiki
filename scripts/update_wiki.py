@@ -2,42 +2,43 @@
 
 Three subcommands:
 
-* ``seed``   — create a new page from scratch for an area the wiki doesn't
-               yet cover. Triggered manually for the very first pages, and
-               by the annealer (D4) for ``todo.md`` entries.
-* ``update`` — patch-driven update of existing pages, consuming the JSON
-               from ``patch_router.py``. Only pages whose ``covers`` match
-               files in the manifest are re-synced.
-* ``query``  — run a templated question (code-review / porting-guide /
-               feature-impl) using selected wiki pages as grounded
-               context. Output is a query artifact under wiki/queries/
-               with full provenance (template, kernel sha, source pages
-               + their last_synced_sha at query time, LLM profile/model,
-               timestamp). The artifact is for AUDIT TRAIL only — see
-               CLAUDE.md §3.3 on the no-reuse rule.
+* ``seed-agent`` — fill in a seeded stub page (created by ``seed_pages.sh``)
+                   by running an agentic loop via the Claude Agent SDK. The
+                   agent uses Read/Grep to navigate the covered sub-tree
+                   itself and writes a SOP-formatted page in one final
+                   assistant message. Works with Anthropic cloud or any
+                   Anthropic-compatible backend (ollama via
+                   ``ANTHROPIC_BASE_URL=http://localhost:11434``).
+* ``update``     — patch-driven update of existing pages, consuming the
+                   JSON from ``patch_router.py``. Only pages whose
+                   ``covers`` match files in the manifest are re-synced.
+* ``query``      — run a templated question (code-review / porting-guide /
+                   feature-impl) using selected wiki pages as grounded
+                   context. Output is a query artifact under wiki/queries/
+                   with full provenance (template, kernel sha, source
+                   pages + their last_synced_sha at query time, LLM
+                   profile/model, timestamp). The artifact is for AUDIT
+                   TRAIL only — see CLAUDE.md §3.3 on the no-reuse rule.
 
-Both call the same LLM prompt machinery in ``scripts.llm_client``. Both
-support ``--mock-llm`` for offline testing — the mock emits a deterministic
-templated page so the rest of the pipeline (parse, validate, write,
-coverage update) can be exercised without API keys.
+``update`` and ``query`` use ``scripts.llm_client`` (one-shot HTTP) and
+support ``--mock-llm``. ``seed-agent`` uses ``claude-agent-sdk`` (install
+separately) and has no mock — the agent loop is exercised by live calls
+only.
 
 Examples
 --------
 
 ::
 
-    # one-off seed of the mm subsystem page
-    python -m scripts.update_wiki seed \\
-        --page subsystems/mm.md --kind subsystem \\
-        --covers 'mm/*.c' 'mm/*.h'
+    # fill an already-stubbed page using a local ollama model
+    export ANTHROPIC_BASE_URL=http://localhost:11434
+    export ANTHROPIC_AUTH_TOKEN=ollama
+    python -m scripts.update_wiki seed-agent \\
+        --page raw/pcie_scsc/mlme.md --model qwen3.6:27b-q4_K_M
 
     # patch-driven update from a routing decision
     python -m scripts.sync_kernel | python -m scripts.patch_router --out r.json
     python -m scripts.update_wiki update --routing r.json
-
-    # offline rehearsal (no API key, no kernel tree needed)
-    python -m scripts.update_wiki seed --page subsystems/mm.md \\
-        --kind subsystem --covers 'mm/*.c' --mock-llm
 """
 from __future__ import annotations
 
@@ -109,46 +110,8 @@ def _mock_llm(messages: list[dict[str, Any]], *, system: str | None,
               profile: str | None, max_tokens: int | None = None,
               temperature: float | None = None,
               cache_system: bool = True) -> llm_client.ChatResult:
-    """Deterministic templated response for offline testing."""
+    """Deterministic templated response for offline testing of cmd_update."""
     user = messages[-1]["content"]
-    # crude task detection
-    if "TASK: SEED" in user:
-        title_line = next((ln for ln in user.splitlines()
-                           if ln.startswith("PAGE PATH:")), "")
-        page = title_line.split(":", 1)[1].strip() if title_line else "page.md"
-        kind_line = next((ln for ln in user.splitlines()
-                          if ln.startswith("KIND:")), "KIND: concept")
-        kind = kind_line.split(":", 1)[1].strip()
-        covers_line = next((ln for ln in user.splitlines()
-                            if ln.startswith("COVERS:")), "COVERS:")
-        covers = [c.strip() for c in covers_line.split(":", 1)[1].split(",")
-                  if c.strip()]
-        sha_line = next((ln for ln in user.splitlines()
-                         if ln.startswith("KERNEL SHA:")), "KERNEL SHA: null")
-        sha = sha_line.split(":", 1)[1].strip()
-        title = Path(page).stem
-        body = (f"```markdown\n"
-                f"---\n"
-                f"title: {title}\n"
-                f"kind: {kind}\n"
-                f"covers:\n" +
-                "".join(f"  - {c}\n" for c in covers) +
-                f"last_synced_sha: {sha}\n"
-                f"last_synced: {now_iso()}\n"
-                f"sources: []\n"
-                f"---\n\n"
-                f"# {title}\n\n"
-                f"_(mock-LLM seed: replace this paragraph with a real "
-                f"summary of {title}.)_\n\n"
-                f"## Key data structures\n\n"
-                f"## Key entry points\n\n"
-                f"## Related\n\n"
-                f"## Recent changes\n\n"
-                f"- {now_iso()}: page seeded.\n"
-                f"```\n")
-        return llm_client.ChatResult(
-            text=body, usage={"mock": True}, model="mock", raw={})
-    # UPDATE
     cur_block = ""
     if "CURRENT PAGE:" in user:
         after = user.split("CURRENT PAGE:", 1)[1]
@@ -210,109 +173,131 @@ def _git_diff(kernel_dir: Path, from_sha: str, to_sha: str,
     return text
 
 
-def _list_kernel_files(kernel_dir: Path, globs: list[str],
-                        cap: int = 200) -> list[str]:
-    """Enumerate kernel-relative files matching any glob. Falls back to an
-    empty list if the kernel tree doesn't exist (e.g., offline demo)."""
-    if not kernel_dir.exists():
-        return []
-    from scripts._meta_io import glob_to_regex
-    pats = [glob_to_regex(g) for g in globs]
-    out: list[str] = []
-    for f in kernel_dir.rglob("*"):
-        if not f.is_file():
-            continue
-        if "/.git/" in str(f):
-            continue
-        rel = str(f.relative_to(kernel_dir))
-        if any(p.match(rel) for p in pats):
-            out.append(rel)
-            if len(out) >= cap:
-                break
-    return sorted(out)
+# ---------------------------------------------------------------------------
+# SEED (agentic)
+# ---------------------------------------------------------------------------
+
+AGENT_SUFFIX = """
+
+You are now an agent with read-only access to the source tree. Tools:
+- Read(file_path, offset, limit) — fetch any line range from any file.
+- Grep(pattern, path) — search for symbol uses across the sub-tree.
+
+Do NOT use Edit/Write/Bash. Your output is the final assistant message only.
+Explore enough to identify: the module's purpose, its top-level entry points
+(function names + signatures), key data structures (struct/enum names), and
+how it connects to neighboring modules (which functions it calls, who calls
+it). When ready, output the FULL page — front-matter + body — inside ONE
+```markdown ... ``` fenced block, and nothing else after the fence.
+"""
 
 
-def _excerpt(kernel_dir: Path, rel: str, max_lines: int = 80) -> str:
-    p = kernel_dir / rel
-    if not p.exists():
-        return ""
+def cmd_seed_agent(args: argparse.Namespace) -> int:
+    """Synchronous wrapper around the async agentic-seed flow."""
+    import asyncio
+    return asyncio.run(_cmd_seed_agent_async(args))
+
+
+async def _cmd_seed_agent_async(args: argparse.Namespace) -> int:
     try:
-        lines = p.read_text(errors="replace").splitlines()
-    except OSError:
-        return ""
-    return "\n".join(lines[:max_lines])
+        from claude_agent_sdk import (
+            AssistantMessage,
+            ClaudeAgentOptions,
+            TextBlock,
+            query,
+        )
+    except ImportError as e:
+        print(f"[seed-agent] missing dependency: {e}", file=sys.stderr)
+        print("Install: pip install claude-agent-sdk", file=sys.stderr)
+        return 4
 
-
-# ---------------------------------------------------------------------------
-# SEED
-# ---------------------------------------------------------------------------
-
-def cmd_seed(args: argparse.Namespace) -> int:
     page_rel = args.page
     if not page_rel.endswith(".md"):
         page_rel += ".md"
     page_path = WIKI_ROOT / page_rel
-    if page_path.exists() and not args.overwrite:
-        print(f"[seed] {page_rel} already exists; use --overwrite to replace",
+    if not page_path.exists():
+        print(f"[seed-agent] page stub not found: {page_rel}",
+              file=sys.stderr)
+        print("Run scripts/seed_pages.sh first to create stubs.",
+              file=sys.stderr)
+        return 2
+    cur_fm, _ = parse_front_matter(page_path.read_text())
+    covers = cur_fm.get("covers") or []
+    if not covers:
+        print(f"[seed-agent] {page_rel} has no covers in front-matter",
+              file=sys.stderr)
+        return 2
+    if cur_fm.get("last_synced") and not args.overwrite:
+        print(f"[seed-agent] {page_rel} already filled "
+              f"(last_synced={cur_fm['last_synced']}); use --overwrite",
               file=sys.stderr)
         return 2
 
-    kernel_dir = KERNEL_ROOT
-    head_sha = _git_head(_resolve_subtree(args.covers))
-    files = _list_kernel_files(kernel_dir, args.covers, cap=args.max_files)
-    excerpts = ""
-    for rel in files[:args.max_excerpts]:
-        body = _excerpt(kernel_dir, rel, max_lines=args.excerpt_lines)
-        if not body.strip():
-            continue
-        excerpts += f"\n=== {rel} (first {args.excerpt_lines} lines) ===\n{body}\n"
-
-    user_msg = (
-        f"TASK: SEED\n"
+    sub_root = f"raw/{covers[0].split('/', 1)[0]}/"
+    user_prompt = (
+        f"TASK: SEED (agentic)\n"
         f"PAGE PATH: {page_rel}\n"
-        f"KIND: {args.kind}\n"
-        f"COVERS: {', '.join(args.covers)}\n"
-        f"KERNEL SHA: {head_sha or 'null'}\n"
-        f"\nFILES IN COVERAGE ({len(files)}):\n"
-        + "\n".join(files[:args.max_files])
-        + "\n\nKEY FILE EXCERPTS:" + (excerpts or " (none)\n")
+        f"KIND: {cur_fm.get('kind', 'entity')}\n"
+        f"COVERS: {', '.join(covers)}\n"
+        f"SUB-TREE ROOT (read paths from here): {sub_root}\n"
+        f"\nCURRENT PAGE (stub to overwrite):\n"
+        f"```markdown\n{page_path.read_text()}```\n"
+        f"\nRead the covered files first, then expand to neighbors via "
+        f"Grep on function/struct names you find. Aim for a Wikipedia-"
+        f"quality summary with concrete symbols, not generic prose.\n"
     )
 
-    call = _mock_llm if args.mock_llm else llm_client.chat
-    res = call(
-        [{"role": "user", "content": user_msg}],
-        system=SYSTEM_PROMPT,
-        profile=args.profile,
+    options = ClaudeAgentOptions(
+        system_prompt=SYSTEM_PROMPT + AGENT_SUFFIX,
+        allowed_tools=["Read", "Grep"],
+        model=args.model,
+        max_turns=args.max_turns,
+        permission_mode="bypassPermissions",
     )
-    page_text = extract_markdown_block(res.text)
-    fm, body = parse_front_matter(page_text)
-    if not fm:
-        print("[seed] response had no front matter; refusing to write",
+
+    final_text = ""
+    async for message in query(prompt=user_prompt, options=options):
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, TextBlock):
+                    print(block.text, end="", file=sys.stderr, flush=True)
+                    final_text += block.text
+    print(file=sys.stderr)
+
+    page_text = extract_markdown_block(final_text)
+    new_fm, new_body = parse_front_matter(page_text)
+    if not new_fm:
+        print("[seed-agent] response had no front matter; refusing to write",
               file=sys.stderr)
-        print(res.text[:500], file=sys.stderr)
+        print(final_text[:500], file=sys.stderr)
         return 3
-    fm["last_synced_sha"] = head_sha
-    fm["last_synced"] = now_iso()
+
+    merged = dict(cur_fm)
+    merged.update(new_fm)
+    # Cover list is owned by seed_pages.sh; the agent must not edit it.
+    merged["covers"] = covers
+    subtree = _resolve_subtree(covers)
+    merged["last_synced_sha"] = _git_head(subtree)
+    merged["last_synced"] = now_iso()
 
     if args.dry_run:
-        print(serialize_page(fm, body))
+        print(serialize_page(merged, new_body))
         return 0
 
-    _write_page(page_rel, fm, body)
+    _write_page(page_rel, merged, new_body)
 
     cov = Coverage.load()
-    cov.pages[page_rel] = {
-        "kind": args.kind,
-        "covers": list(args.covers),
-        "last_synced_sha": head_sha,
-        "last_synced": fm["last_synced"],
-    }
-    if cov.last_kernel_sha is None and head_sha:
-        cov.last_kernel_sha = head_sha
+    cov.pages.setdefault(page_rel, {})
+    cov.pages[page_rel].update({
+        "kind": merged.get("kind", "entity"),
+        "covers": covers,
+        "last_synced_sha": merged["last_synced_sha"],
+        "last_synced": merged["last_synced"],
+    })
     cov.save()
 
-    print(f"[seed] wrote {page_rel} ({len(body)} bytes), "
-          f"covers={args.covers}, head={head_sha}")
+    print(f"[seed-agent] wrote {page_rel} ({len(new_body)} bytes), "
+          f"head={merged['last_synced_sha']}")
     return 0
 
 
@@ -648,20 +633,19 @@ def _main(argv: list[str]) -> int:
     common.add_argument("--dry-run", action="store_true",
                         help="print result without touching the wiki tree")
 
-    s = sub.add_parser("seed", parents=[common],
-                       help="create a new page from scratch")
-    s.add_argument("--page", required=True, help="path relative to wiki/")
-    s.add_argument("--kind", required=True,
-                   choices=["subsystem", "concept", "entity", "query"])
-    s.add_argument("--covers", nargs="+", required=True,
-                   help="path globs this page is responsible for")
-    s.add_argument("--overwrite", action="store_true")
-    s.add_argument("--max-files", type=int, default=120,
-                   help="cap on file list shown to the LLM")
-    s.add_argument("--max-excerpts", type=int, default=8,
-                   help="cap on number of source files to excerpt")
-    s.add_argument("--excerpt-lines", type=int, default=80)
-    s.set_defaults(func=cmd_seed)
+    s = sub.add_parser("seed-agent", parents=[common],
+                       help="fill a stubbed page via the Claude Agent SDK")
+    s.add_argument("--page", required=True,
+                   help="path relative to wiki/ (must already exist as a "
+                        "stub from seed_pages.sh)")
+    s.add_argument("--model", required=True,
+                   help="model name (e.g. claude-sonnet-4-5 for the "
+                        "Anthropic cloud, qwen3.6:27b-q4_K_M for ollama)")
+    s.add_argument("--max-turns", type=int, default=25,
+                   help="agent turn cap (default: 25)")
+    s.add_argument("--overwrite", action="store_true",
+                   help="refill a page even if last_synced is already set")
+    s.set_defaults(func=cmd_seed_agent)
 
     u = sub.add_parser("update", parents=[common],
                        help="patch-driven update from a routing decision")

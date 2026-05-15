@@ -1263,8 +1263,8 @@
         "pcie_scsc/mlme.h"
       ],
       "kind": "entity",
-      "last_synced": "2026-05-12T13:40:50Z",
-      "last_synced_sha": "114fcc4f30d1fd1be45c63ce19dac706e0d18fb5"
+      "last_synced": "2026-05-15T20:23:17Z",
+      "last_synced_sha": "de8720511fda4cd10d6d358ad754412658bf9024"
     },
     "raw/pcie_scsc/mlme_nan.md": {
       "covers": [
