@@ -46,11 +46,16 @@ COVERAGE = REPO_ROOT / "wiki" / "_meta" / "coverage.json"
 
 def _select_pages(cov: dict[str, Any], *,
                   glob: str | None,
+                  exclude_globs: list[str] | None,
                   force: bool) -> list[str]:
-    """Return the sorted page paths to process, after filter + filled check."""
+    """Return the sorted page paths to process, after include filter +
+    exclude filter(s) + filled check."""
+    excludes = exclude_globs or []
     out: list[str] = []
     for page in sorted(cov.get("pages", {}).keys()):
         if glob and not fnmatch.fnmatchcase(page, glob):
+            continue
+        if any(fnmatch.fnmatchcase(page, x) for x in excludes):
             continue
         if not force and cov["pages"][page].get("last_synced"):
             continue
@@ -79,6 +84,10 @@ def _run(argv: list[str]) -> int:
     p.add_argument("--filter", dest="glob",
                    help="fnmatch glob on coverage.json page keys "
                         "(e.g. 'raw/pcie_scsc/kunit/*')")
+    p.add_argument("--exclude", dest="excludes", action="append", default=[],
+                   help="fnmatch glob to skip (e.g. 'raw/*/kunit/*'); "
+                        "repeat to stack multiple excludes. Applied after "
+                        "--filter.")
     p.add_argument("--force", action="store_true",
                    help="refill pages even when last_synced is already set "
                         "(passes --overwrite to seed-agent)")
@@ -94,7 +103,8 @@ def _run(argv: list[str]) -> int:
               file=sys.stderr)
         return 2
     cov = json.loads(COVERAGE.read_text())
-    pages = _select_pages(cov, glob=args.glob, force=args.force)
+    pages = _select_pages(cov, glob=args.glob,
+                          exclude_globs=args.excludes, force=args.force)
     if not pages:
         print("[seed-all] no matching pages to process", file=sys.stderr)
         return 0
@@ -102,6 +112,7 @@ def _run(argv: list[str]) -> int:
     plan = (
         f"[seed-all] {len(pages)} page(s) to process, model={args.model}"
         + (f", filter={args.glob}" if args.glob else "")
+        + (f", exclude={args.excludes}" if args.excludes else "")
         + (", force" if args.force else "")
         + (", dry-run" if args.dry_run else "")
     )

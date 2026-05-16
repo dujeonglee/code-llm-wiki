@@ -23,7 +23,7 @@ class SelectPages(unittest.TestCase):
             "raw/x/c.md": {},
         })
         self.assertEqual(
-            _select_pages(cov, glob=None, force=False),
+            _select_pages(cov, glob=None, exclude_globs=None, force=False),
             ["raw/x/b.md", "raw/x/c.md"],
         )
 
@@ -33,7 +33,7 @@ class SelectPages(unittest.TestCase):
             "raw/x/b.md": {"last_synced": None},
         })
         self.assertEqual(
-            _select_pages(cov, glob=None, force=True),
+            _select_pages(cov, glob=None, exclude_globs=None, force=True),
             ["raw/x/a.md", "raw/x/b.md"],
         )
 
@@ -44,7 +44,7 @@ class SelectPages(unittest.TestCase):
             "raw/y/c.md":      {"last_synced": None},
         })
         self.assertEqual(
-            _select_pages(cov, glob="raw/x/*", force=False),
+            _select_pages(cov, glob="raw/x/*", exclude_globs=None, force=False),
             ["raw/x/a.md", "raw/x/sub/b.md"],
         )
 
@@ -54,7 +54,7 @@ class SelectPages(unittest.TestCase):
             "raw/x/b.md": {"last_synced": None},
         })
         self.assertEqual(
-            _select_pages(cov, glob="raw/x/*", force=False),
+            _select_pages(cov, glob="raw/x/*", exclude_globs=None, force=False),
             ["raw/x/b.md"],
         )
 
@@ -65,7 +65,7 @@ class SelectPages(unittest.TestCase):
             "raw/x/m.md": {"last_synced": None},
         })
         self.assertEqual(
-            _select_pages(cov, glob=None, force=False),
+            _select_pages(cov, glob=None, exclude_globs=None, force=False),
             ["raw/x/a.md", "raw/x/m.md", "raw/x/z.md"],
         )
 
@@ -74,7 +74,49 @@ class SelectPages(unittest.TestCase):
             "raw/x/a.md": {"last_synced": "2026-05-15T00:00:00Z"},
             "raw/x/b.md": {"last_synced": "2026-05-15T00:00:00Z"},
         })
-        self.assertEqual(_select_pages(cov, glob=None, force=False), [])
+        self.assertEqual(
+            _select_pages(cov, glob=None, exclude_globs=None, force=False),
+            [],
+        )
+
+    def test_exclude_skips_matching_pages(self):
+        cov = _cov({
+            "raw/x/a.md":         {"last_synced": None},
+            "raw/x/kunit/k1.md":  {"last_synced": None},
+            "raw/x/kunit/k2.md":  {"last_synced": None},
+            "raw/x/test/t1.md":   {"last_synced": None},
+        })
+        self.assertEqual(
+            _select_pages(cov, glob=None,
+                          exclude_globs=["raw/x/kunit/*"], force=False),
+            ["raw/x/a.md", "raw/x/test/t1.md"],
+        )
+
+    def test_multiple_excludes_stack(self):
+        cov = _cov({
+            "raw/x/a.md":        {"last_synced": None},
+            "raw/x/kunit/k.md":  {"last_synced": None},
+            "raw/x/test/t.md":   {"last_synced": None},
+        })
+        self.assertEqual(
+            _select_pages(cov, glob=None,
+                          exclude_globs=["raw/x/kunit/*", "raw/x/test/*"],
+                          force=False),
+            ["raw/x/a.md"],
+        )
+
+    def test_filter_then_exclude(self):
+        cov = _cov({
+            "raw/x/a.md":         {"last_synced": None},
+            "raw/x/kunit/k.md":   {"last_synced": None},
+            "raw/y/a.md":         {"last_synced": None},
+        })
+        # --filter narrows to raw/x/*, then --exclude removes kunit
+        self.assertEqual(
+            _select_pages(cov, glob="raw/x/*",
+                          exclude_globs=["raw/x/kunit/*"], force=False),
+            ["raw/x/a.md"],
+        )
 
 
 class BuildCmd(unittest.TestCase):

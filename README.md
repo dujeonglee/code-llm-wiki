@@ -164,6 +164,10 @@ python -m scripts.seed_all --model qwen3.6:27b-q4_K_M
 # 좁혀서: 한 디렉토리만
 python -m scripts.seed_all --model qwen3.6:27b-q4_K_M --filter 'raw/pcie_scsc/osal/*'
 
+# 특정 디렉토리(들) 제외
+python -m scripts.seed_all --model qwen3.6:27b-q4_K_M \
+    --exclude 'raw/pcie_scsc/kunit/*' --exclude 'raw/pcie_scsc/test/*'
+
 # 명령만 미리보기 (실제 호출 안 함)
 python -m scripts.seed_all --model qwen3.6:27b-q4_K_M --dry-run
 
@@ -172,7 +176,8 @@ python -m scripts.seed_all --model claude-sonnet-4-5 --force --continue
 ```
 
 옵션:
-- `--filter GLOB` — coverage.json key 글로브 (`fnmatch`)
+- `--filter GLOB` — coverage.json key 글로브로 좁히기 (`fnmatch`)
+- `--exclude GLOB` — 글로브 매칭되는 페이지 제외 (여러 번 누적). `--filter` 적용 후 추가로 거름
 - `--force` — 이미 채워진 페이지도 재시드 (`--overwrite` 전달)
 - `--continue` — 한 페이지 실패 시 중단 대신 다음으로
 - `--dry-run` — 호출할 명령만 stdout 출력
@@ -268,7 +273,7 @@ python -m scripts.update_wiki query \
 | LLM 오프라인 검증 | `python -m scripts.llm_client --selftest` |
 | Stub 페이지 일괄 생성 | `bash scripts/seed_pages.sh [--dry-run] [--force] [--per-file]` |
 | **페이지 시드 (agentic)** | `python -m scripts.update_wiki seed-agent --page P --model M [--max-turns N] [--overwrite]` |
-| **페이지 시드 batch** | `python -m scripts.seed_all --model M [--filter GLOB] [--force] [--continue] [--dry-run]` |
+| **페이지 시드 batch** | `python -m scripts.seed_all --model M [--filter GLOB] [--exclude GLOB ...] [--force] [--continue] [--dry-run]` |
 | **Sub-tree 매니페스트** | `python -m scripts.sync_subtree --tree raw/<top> [--remote R] [--branch B] [--no-fetch] [--record] [--out r.json]` |
 | 영향 페이지 라우팅 | `python -m scripts.patch_router --files F1 F2 [--apply] --out r.json` |
 | 패치 → 페이지 갱신 | `python -m scripts.update_wiki update --routing r.json` |
