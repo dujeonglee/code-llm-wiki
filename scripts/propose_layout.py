@@ -151,7 +151,29 @@ def _extract_yaml(text: str) -> str | None:
     return m.group(1).rstrip() + "\n" if m else None
 
 
-async def _propose(tree: Path, *, model: str, max_turns: int) -> str:
+def _build_user_prompt(tree: Path, exclude: list[str]) -> str:
+    """Compose the per-run user prompt. Pulled out so it's unit-testable
+    without spinning up the agent SDK."""
+    top = tree.name
+    parts = [
+        "TASK: WIKI LAYOUT PROPOSAL",
+        f"TREE: {tree}",
+        f"TOP NAME (for basename hints): {top}",
+        f"COVERS PREFIX (use this in every cover glob): {top}/",
+    ]
+    if exclude:
+        parts.append(
+            "EXCLUDE (skip these subpaths — test or build infrastructure, "
+            "not architecture; do not Read/Grep them, do not propose pages "
+            f"for them): {', '.join(exclude)}"
+        )
+    parts.append("")
+    parts.append("Explore the sub-tree, then output the YAML proposal.")
+    return "\n".join(parts)
+
+
+async def _propose(tree: Path, *, model: str, max_turns: int,
+                   exclude: list[str]) -> str:
     try:
         from claude_agent_sdk import (
             AssistantMessage,
@@ -165,14 +187,7 @@ async def _propose(tree: Path, *, model: str, max_turns: int) -> str:
             "Install: pip install claude-agent-sdk"
         )
 
-    top = tree.name
-    user_prompt = (
-        f"TASK: WIKI LAYOUT PROPOSAL\n"
-        f"TREE: {tree}\n"
-        f"TOP NAME (for basename hints): {top}\n"
-        f"COVERS PREFIX (use this in every cover glob): {top}/\n"
-        f"\nExplore the sub-tree, then output the YAML proposal."
-    )
+    user_prompt = _build_user_prompt(tree, exclude)
 
     options = ClaudeAgentOptions(
         system_prompt=SYSTEM_PROMPT + AGENT_SUFFIX,
@@ -206,6 +221,11 @@ def _run(argv: list[str]) -> int:
                    help="llm.json profile (default: per config)")
     p.add_argument("--max-turns", type=int, default=20,
                    help="agent turn cap (default: 20)")
+    p.add_argument("--exclude", dest="excludes", action="append", default=[],
+                   help="subpath under the tree to skip (e.g. 'kunit', "
+                        "'test'); repeat to stack. Injected into the agent "
+                        "prompt so the LLM neither reads nor proposes pages "
+                        "under those paths.")
     p.add_argument("--out",
                    help="output YAML path (default: wiki/_meta/"
                         "layout-proposals/<top>-<timestamp>.yaml)")
@@ -229,7 +249,8 @@ def _run(argv: list[str]) -> int:
         return 4
 
     text = asyncio.run(_propose(tree, model=args.model,
-                                max_turns=args.max_turns))
+                                max_turns=args.max_turns,
+                                exclude=args.excludes))
     yaml_body = _extract_yaml(text)
     if not yaml_body:
         print("[propose-layout] response had no ```yaml fence; aborting",
