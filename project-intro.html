@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>code-llm-wiki — 팀 소개 자료</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+      fontSize: '14px',
+      primaryColor: '#dbeafe',
+      primaryTextColor: '#0f172a',
+      primaryBorderColor: '#1e40af',
+      lineColor: '#475569'
+    },
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #1e40af;
+    --accent-soft: #dbeafe;
+    --yellow: #fef3c7;
+    --yellow-strong: #fde68a;
+    --green: #dcfce7;
+    --pink: #fce7f3;
+    --purple: #f3e8ff;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+  }
+  header.hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #6d28d9 100%);
+    color: #fff;
+    padding: 56px 32px;
+    border-radius: 16px;
+    margin-bottom: 48px;
+    box-shadow: var(--shadow);
+  }
+  header.hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 12px;
+  }
+  header.hero h1 {
+    margin: 0 0 16px;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  header.hero p.tagline {
+    margin: 0;
+    font-size: 18px;
+    opacity: 0.92;
+    max-width: 760px;
+  }
+  header.hero .meta {
+    margin-top: 28px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    opacity: 0.85;
+  }
+  header.hero .meta span::before {
+    content: "●";
+    margin-right: 8px;
+    color: #93c5fd;
+  }
+  nav.toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 48px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    margin: 0 0 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding: 0 0 0 20px;
+    columns: 2;
+    column-gap: 32px;
+  }
+  nav.toc li { margin: 4px 0; }
+  nav.toc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  section .subtitle {
+    color: var(--muted);
+    margin: 0 0 28px;
+    font-size: 15px;
+  }
+  section h3 {
+    font-size: 19px;
+    margin: 32px 0 12px;
+    color: var(--text);
+  }
+  section h4 {
+    font-size: 16px;
+    margin: 20px 0 8px;
+    color: var(--text);
+  }
+  p { margin: 12px 0; }
+
+  .lead {
+    font-size: 17px;
+    color: var(--text);
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0 24px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .card .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .card h4 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg);
+    font-weight: 600;
+    color: var(--text);
+  }
+  tr:last-child td { border-bottom: none; }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: #f1f5f9;
+    color: #334155;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 12px 0;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  .mermaid {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 20px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    margin: 12px 0 20px;
+    color: var(--muted);
+  }
+  .legend .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  .legend .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid #94a3b8;
+  }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 18px 0;
+    font-size: 14px;
+  }
+  .callout.warn {
+    border-left-color: #b45309;
+    background: var(--yellow);
+  }
+  .callout.note {
+    border-left-color: #15803d;
+    background: var(--green);
+  }
+  .callout strong { color: var(--text); }
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 20px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pill.yellow { background: var(--yellow); color: #92400e; }
+  .pill.green  { background: var(--green); color: #166534; }
+  .pill.pink   { background: var(--pink); color: #9d174d; }
+  .pill.purple { background: var(--purple); color: #6b21a8; }
+
+  .steps {
+    counter-reset: step;
+    margin: 24px 0;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+  }
+  .step:first-child { border-top: none; }
+  .step .step-num {
+    counter-increment: step;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .step .step-num::before { content: counter(step); }
+  .step h4 { margin: 4px 0 6px; }
+  .step p { margin: 4px 0; color: var(--muted); font-size: 14px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 760px) {
+    .two-col { grid-template-columns: 1fr; }
+    nav.toc ol { columns: 1; }
+    section { padding: 24px 20px; }
+    header.hero { padding: 36px 24px; }
+    header.hero h1 { font-size: 30px; }
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 32px 0 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <div class="eyebrow">팀 내부 소개 자료 · 2026-05-17</div>
+  <h1>code-llm-wiki</h1>
+  <p class="tagline">
+    소스 트리를 동기화하면서 <strong>LLM이 자동으로 유지·보수하는</strong> 코드 위키.
+    Karpathy의 LLM Wiki 패턴을 코드 도메인에 적용했고, 리눅스 커널 외 임의의 sub-tree에도 동작합니다.
+  </p>
+  <div class="meta">
+    <span>Python · Mermaid · Claude Agent SDK</span>
+    <span>provenance-first</span>
+    <span>cron-driven patch update</span>
+    <span>local ollama / Anthropic 양쪽 지원</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#concepts">키 컨셉</a></li>
+    <li><a href="#architecture">아키텍처 한 장</a></li>
+    <li><a href="#layers">레이어 / 소유권</a></li>
+    <li><a href="#workflow">워크플로 4단계</a></li>
+    <li><a href="#example">동작 예시 (실전 시나리오)</a></li>
+    <li><a href="#page">페이지 구조 (front-matter)</a></li>
+    <li><a href="#future">향후 개선 방향</a></li>
+    <li><a href="#faq">팀이 자주 묻는 것</a></li>
+  </ol>
+</nav>
+
+<!-- ====================================================== -->
+<section id="concepts">
+  <h2><span class="num">1</span>키 컨셉</h2>
+  <p class="subtitle">왜 만들었고, 무엇이 핵심 발상인가.</p>
+
+  <div class="lead">
+    “코드베이스가 너무 커서 신입은 한 달 걸려 읽고, 시니어도 잊어버린다.”
+    이 위키는 <strong>raw 소스</strong>와 <strong>LLM이 쓴 설명 페이지</strong>를 1:1로 미러링하면서,
+    소스가 움직일 때마다 영향받는 페이지만 부분 갱신합니다. 사람은 골격을 정하고 LLM은 본문을 채웁니다.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="icon">①</div>
+      <h4>1:1 미러링</h4>
+      <p><code>raw/&lt;top&gt;/</code> ↔ <code>wiki/raw/&lt;top&gt;/</code>.
+      소스 파일 한 짝(<code>.c+.h</code>)에 페이지 하나. 길 잃지 않음.</p>
+    </div>
+    <div class="card">
+      <div class="icon">②</div>
+      <h4>사람은 골격, LLM은 본문</h4>
+      <p>어떤 페이지가 존재할지는 사람이 결정 (또는 LLM 제안 → 사람 리뷰).
+      페이지 <strong>내용</strong>은 LLM이 생성·갱신.</p>
+    </div>
+    <div class="card">
+      <div class="icon">③</div>
+      <h4>Provenance 강제</h4>
+      <p>모든 LLM 호출은 결과의 <code>last_synced_sha</code>, 모델, 시각, 본 파일을
+      front-matter에 남김. 누가/언제/어떤 sha에서 썼는지 추적 가능.</p>
+    </div>
+    <div class="card">
+      <div class="icon">④</div>
+      <h4>Diff 기반 patch-up</h4>
+      <p>upstream이 움직이면 변경 파일만 라우팅 → 영향 페이지만 부분 갱신.
+      전면 재작성 금지.</p>
+    </div>
+    <div class="card">
+      <div class="icon">⑤</div>
+      <h4>Annealing</h4>
+      <p>cron이 주기적으로 stale 페이지, 끊긴 링크, drift를 budget 상한 내에서 수리.</p>
+    </div>
+    <div class="card">
+      <div class="icon">⑥</div>
+      <h4>“신선해 보임” 안 만듦</h4>
+      <p>출처가 안 움직였다 ≠ 결론이 맞다. 거짓 자신감 방지를 위해
+      auto-refresh 배지 의도적으로 배제.</p>
+    </div>
+  </div>
+
+  <h3>코드 도메인에 맞춘 두 가지 디자인 결정</h3>
+  <div class="two-col">
+    <div>
+      <h4>entity vs subsystem 분리</h4>
+      <p style="font-size:14px;color:var(--muted)">
+        <code>.c+.h</code> 한 짝은 결정적으로 만들어진다 (<code>seed_pages.sh</code>).
+        여러 파일에 걸친 subsystem은 잘못 묶이면 그 위에 쌓이는 본문·sources·query 흔적이
+        모두 헛것이 되므로, LLM이 <strong>YAML 제안</strong>을 만들고 사람이 리뷰한 뒤
+        결정적으로 적용 (<code>propose_layout</code> → <code>apply_layout</code>).
+      </p>
+    </div>
+    <div>
+      <h4>coverage.json = 단일 진실</h4>
+      <p style="font-size:14px;color:var(--muted)">
+        페이지 ↔ 소스 파일 매핑 + 신선도 ledger를 한 파일에 모음.
+        거의 모든 도구가 여기를 읽거나 씀. 라우팅 (diff → 어떤 페이지 갱신할지)도
+        여기로 결정. JSON 한 파일이라 git diff·리뷰 친화적.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================== -->
+<section id="architecture">
+  <h2><span class="num">2</span>아키텍처 한 장</h2>
+  <p class="subtitle">데이터가 어디서 와서 어디로 가는가.</p>
+
+  <div class="legend">
+    <span class="chip"><span class="swatch" style="background:#fef3c7"></span> 사용자 소유 · 불변</span>
+    <span class="chip"><span class="swatch" style="background:#dbeafe"></span> LLM 생성</span>
+    <span class="chip"><span class="swatch" style="background:#fce7f3"></span> 사람 리뷰 게이트</span>
+    <span class="chip"><span class="swatch" style="background:#fde68a;border-width:2px"></span> 라우팅 허브 (coverage.json)</span>
+    <span class="chip"><span class="swatch" style="background:#e0e7ff"></span> 도구 / 중간 산출물</span>
+    <span class="chip"><span class="swatch" style="background:#dcfce7"></span> 빌드 산출물</span>
+  </div>
+
+  <div class="mermaid">
+flowchart TD
+    upstream([External upstream])
+    raw[("raw/&lt;top&gt;/<br/>local git, gitignored")]
+    proposal["wiki/_meta/layout-proposals/<br/>*.yaml (reviewable)"]
+    stub_entity["wiki/raw/&lt;top&gt;/&lt;file&gt;.md<br/>entity stub"]
+    stub_arch["wiki/raw/&lt;top&gt;/_*.md<br/>subsystem/concept stub"]
+    filled["wiki/raw/&lt;top&gt;/*.md<br/>filled (body written)"]
+    cov[("wiki/_meta/coverage.json<br/>routing index + ledger")]
+    queries["wiki/queries/*.md<br/>audit trail"]
+    site["site/*.html"]
+
+    upstream -. "git clone / pull" .-> raw
+
+    raw -->|"(1a) seed_pages.sh"| stub_entity
+    raw -->|"(1b) propose_layout"| proposal
+    proposal -->|"human review +<br/>(1c) apply_layout"| stub_arch
+
+    stub_entity -->|"register covers"| cov
+    stub_arch   -->|"register covers"| cov
+
+    stub_entity -->|"(2) seed-agent"| filled
+    stub_arch   -->|"(2) seed-agent"| filled
+    filled -->|"update last_synced/sha"| cov
+
+    raw --> diff["changed files manifest<br/>(sync_subtree)"]
+    cov -. "read: covers → pages" .-> diff
+    diff -->|"(3) patch_router → update"| filled
+
+    cov -. "read: stale / drift" .-> anneal{{"(4) anneal (cron)"}}
+    anneal -->|"repair"| filled
+
+    filled -.->|"(5) query<br/>code-review / porting / feature-impl"| queries
+    filled -->|"build_site.py · mkdocs"| site
+
+    classDef immutable fill:#fef3c7,stroke:#a16207,color:#000
+    classDef llm fill:#dbeafe,stroke:#1e40af,color:#000
+    classDef review fill:#fce7f3,stroke:#9d174d,color:#000
+    classDef hub fill:#fde68a,stroke:#b45309,color:#000,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3,color:#000
+    classDef artifact fill:#dcfce7,stroke:#15803d,color:#000
+
+    class upstream,raw immutable
+    class stub_entity,stub_arch,filled,queries llm
+    class cov hub
+    class proposal review
+    class diff,anneal tool
+    class site artifact
+  </div>
+
+  <div class="callout">
+    <strong>중요 포인트.</strong> 모든 화살표는 결국 <code>coverage.json</code>으로 모이거나 나갑니다.
+    이 파일이 있어야 “이 패치가 어떤 페이지를 건드리는가?”에 결정적으로 답할 수 있고,
+    이게 cron 자동화의 기반입니다.
+  </div>
+</section>
+
+<!-- ====================================================== -->
+<section id="layers">
+  <h2><span class="num">3</span>레이어 / 소유권</h2>
+  <p class="subtitle">누가 무엇을 쓰는가 — 충돌을 막는 규칙.</p>
+
+  <div class="mermaid">
+flowchart LR
+    subgraph User["👤 사용자 (사람)"]
+      direction TB
+      U1["raw/&lt;top&gt;/<br/>소스 sub-tree"]
+      U2["CLAUDE.md / scripts/<br/>운영 규칙"]
+      U3["wiki/index.md<br/>구조 페이지"]
+      U4["layout-proposals/*.yaml<br/>리뷰"]
+    end
+
+    subgraph LLM["🤖 LLM"]
+      direction TB
+      L1["wiki/raw/&lt;top&gt;/*.md<br/>본문"]
+      L2["wiki/queries/*.md<br/>분석 산출물"]
+      L3["layout-proposals/*.yaml<br/>제안 (리뷰 전)"]
+    end
+
+    subgraph Tool["🔧 도구"]
+      direction TB
+      T1["coverage.json<br/>라우팅 ledger"]
+      T2["todo.md<br/>uncovered backlog"]
+      T3["_index.md<br/>디렉토리 인덱스"]
+    end
+
+    U1 -.->|읽기만| L1
+    L3 -->|사람 리뷰| U4
+    U4 -.->|apply_layout| T1
+    L1 <-.->|read/write| T1
+
+    classDef user fill:#fef3c7,stroke:#a16207
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef tool fill:#e0e7ff,stroke:#3730a3
+    class U1,U2,U3,U4 user
+    class L1,L2,L3 llm
+    class T1,T2,T3 tool
+  </div>
+
+  <table>
+    <thead><tr><th>레이어</th><th>소유</th><th>역할</th><th>변경 방법</th></tr></thead>
+    <tbody>
+      <tr><td><code>raw/&lt;top&gt;/</code></td><td>사용자</td><td>소스 sub-tree (각자 별도 local git)</td><td>upstream pull · LLM 읽기만</td></tr>
+      <tr><td><code>wiki/raw/&lt;top&gt;/*.md</code></td><td>LLM</td><td>소스 유도 페이지 (entity / subsystem / concept)</td><td>seed-agent · update · anneal</td></tr>
+      <tr><td><code>wiki/queries/*.md</code></td><td>LLM</td><td>코드 리뷰 / 포팅 / 기능 구현 산출물 (감사용)</td><td><code>update_wiki query</code></td></tr>
+      <tr><td><code>wiki/index.md</code>, <code>_index.md</code></td><td>사람 / 도구</td><td>구조·인덱스 페이지</td><td>PR · <code>seed_pages.sh</code></td></tr>
+      <tr><td><code>wiki/_meta/coverage.json</code></td><td>도구</td><td>페이지 ↔ covers + last_synced</td><td>모든 워크플로 도구가 갱신</td></tr>
+      <tr><td><code>CLAUDE.md</code>, <code>scripts/</code></td><td>사람</td><td>운영 SOP · 도구 코드</td><td>PR 리뷰</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====================================================== -->
+<section id="workflow">
+  <h2><span class="num">4</span>워크플로 4단계</h2>
+  <p class="subtitle">트리거·비용·결정론이 달라서 단계별로 분리되어 있습니다.</p>
+
+  <table>
+    <thead><tr><th>§</th><th>단계</th><th>결정론</th><th>LLM 호출</th><th>트리거</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>초기화 (구조)</td><td>✅ (layout만 LLM)</td><td>1회 · 선택</td><td>사람</td></tr>
+      <tr><td>1</td><td>최초 시드 (본문)</td><td>❌</td><td>per-page</td><td>사람 / batch</td></tr>
+      <tr><td>2</td><td>패치 업데이트</td><td>❌</td><td>per-page (영향만)</td><td>cron</td></tr>
+      <tr><td>3</td><td>Annealing</td><td>❌</td><td>budget-cap</td><td>cron</td></tr>
+      <tr><td>4</td><td>쿼리 / 응용</td><td>❌</td><td>per-query</td><td>사람</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.1  초기화 — 골격 만들기 (비용 거의 0)</h3>
+  <div class="pill-row">
+    <span class="pill green">결정적</span>
+    <span class="pill">사람 리뷰 게이트</span>
+    <span class="pill yellow">layout만 LLM (선택)</span>
+  </div>
+  <div class="mermaid">
+flowchart LR
+    raw[("raw/&lt;top&gt;/")]
+    proposal["layout-proposals/*.yaml"]
+    stub_entity["entity stub<br/>(.c+.h 짝)"]
+    stub_arch["subsystem/concept stub<br/>(_*.md)"]
+    cov[("coverage.json")]
+
+    raw -->|"(0a) seed_pages.sh<br/>deterministic"| stub_entity
+    raw -->|"(0b) propose_layout<br/>LLM (layout only)"| proposal
+    proposal -->|"human review +<br/>(0c) apply_layout"| stub_arch
+    stub_entity -->|"register kind/covers"| cov
+    stub_arch   -->|"register kind/covers"| cov
+
+    classDef immutable fill:#fef3c7,stroke:#a16207
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef review fill:#fce7f3,stroke:#9d174d
+    classDef hub fill:#fde68a,stroke:#b45309,stroke-width:3px
+    class raw immutable
+    class stub_entity,stub_arch llm
+    class proposal review
+    class cov hub
+  </div>
+
+  <h3>4.2  최초 시드 — 본문 채우기 (여기서부터 비용 발생)</h3>
+  <div class="pill-row">
+    <span class="pill purple">agentic loop</span>
+    <span class="pill">Read / Grep 도구</span>
+    <span class="pill yellow">per-page subprocess isolation</span>
+  </div>
+  <div class="mermaid">
+flowchart LR
+    raw[("raw/&lt;top&gt;/")]
+    stub["stub page<br/>(body empty)"]
+    cov[("coverage.json")]
+    batch{{"seed_all batch<br/>--filter / --exclude"}}
+    seed{{"update_wiki seed-agent<br/>claude-agent-sdk"}}
+    filled["filled page"]
+
+    cov -. "list unfilled" .-> batch
+    batch -->|"per page (subprocess)"| seed
+    stub --> seed
+    raw -. "agent reads selectively" .-> seed
+    seed -->|"write body"| filled
+    seed -->|"update last_synced/sha"| cov
+
+    classDef immutable fill:#fef3c7,stroke:#a16207
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef hub fill:#fde68a,stroke:#b45309,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3
+    class raw immutable
+    class stub,filled llm
+    class cov hub
+    class batch,seed tool
+  </div>
+  <div class="callout warn">
+    <strong>비용 가늠</strong> (mlme.c 8,114줄 페이지 1장 기준):
+    Anthropic Sonnet 4.6 — 약 2분, ~89K 토큰, ≈ $0.30 ·
+    로컬 ollama qwen3.6:27b-q4_K_M — 약 60분, $0.
+    <br>→ 200+ 페이지 batch는 ollama로는 야간 실행 전제.
+  </div>
+
+  <h3>4.3  패치 업데이트 — upstream이 움직였을 때 (cron)</h3>
+  <div class="pill-row">
+    <span class="pill green">자동</span>
+    <span class="pill">영향 페이지만 부분 갱신</span>
+    <span class="pill yellow">전면 재작성 금지</span>
+  </div>
+  <div class="mermaid">
+flowchart LR
+    raw[("raw/&lt;top&gt;/<br/>HEAD 변경")]
+    manifest["changed files<br/>manifest"]
+    routing["routing<br/>(영향 페이지 + uncovered)"]
+    todo[("todo.md")]
+    filled["filled page"]
+    cov[("coverage.json")]
+
+    raw -->|"(2a) sync_subtree<br/>git fetch + diff"| manifest
+    cov -. "subtree_shas[top]" .-> manifest
+    manifest -->|"(2b) patch_router"| routing
+    cov -. "covers[] glob match" .-> routing
+    routing -->|"uncovered files"| todo
+    routing -->|"(2c) update_wiki update<br/>diff + body → LLM"| filled
+    filled -->|"update last_synced/sha"| cov
+    manifest -->|"새 HEAD"| cov
+
+    classDef immutable fill:#fef3c7,stroke:#a16207
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef hub fill:#fde68a,stroke:#b45309,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3
+    class raw immutable
+    class filled,todo llm
+    class cov hub
+    class manifest,routing tool
+  </div>
+
+  <h3>4.4  Annealing — 주기 수리 (budget 상한)</h3>
+  <div class="pill-row">
+    <span class="pill purple">cron</span>
+    <span class="pill yellow">budget-cap</span>
+    <span class="pill">stale / broken / drift 자동 surface</span>
+  </div>
+  <div class="mermaid">
+flowchart LR
+    cron([cron / on demand])
+    scan{{"anneal scan<br/>scoring"}}
+    cand["top K candidates"]
+    repair{{"anneal run<br/>LLM repair"}}
+    filled["filled page"]
+    cov[("coverage.json")]
+    todo[("todo.md")]
+
+    cron --> scan
+    cov -. "last_synced age" .-> scan
+    cov -. "covers vs FS" .-> scan
+    filled -. "[[wiki-link]] 검사" .-> scan
+    todo -. "uncovered" .-> scan
+    scan -->|"--budget K"| cand
+    cand --> repair
+    repair -->|"부분 갱신"| filled
+    repair -->|"update last_synced/sha"| cov
+
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef hub fill:#fde68a,stroke:#b45309,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3
+    classDef trigger fill:#f3e8ff,stroke:#6b21a8
+    class filled,todo llm
+    class cov hub
+    class scan,cand,repair tool
+    class cron trigger
+  </div>
+
+  <h3>4.5  쿼리 / 응용 — 위키를 grounding으로 (read-only)</h3>
+  <div class="pill-row">
+    <span class="pill green">read-only</span>
+    <span class="pill">provenance 자동 기록</span>
+    <span class="pill pink">재사용 정책 명시</span>
+  </div>
+  <div class="mermaid">
+flowchart LR
+    user([human])
+    input["diff / spec / feature"]
+    pages["selected pages"]
+    template["_templates/<br/>code-review / porting /<br/>feature-impl"]
+    query{{"update_wiki query<br/>LLM (one-shot)"}}
+    cov[("coverage.json")]
+    output["queries/&lt;slug&gt;.md<br/>+ provenance"]
+
+    user --> input
+    user --> pages
+    pages --> query
+    template --> query
+    input --> query
+    cov -. "page sha at query time" .-> query
+    query --> output
+
+    classDef llm fill:#dbeafe,stroke:#1e40af
+    classDef hub fill:#fde68a,stroke:#b45309,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3
+    classDef artifact fill:#dcfce7,stroke:#15803d
+    class template llm
+    class cov hub
+    class query tool
+    class output,input,pages artifact
+  </div>
+
+  <table>
+    <thead><tr><th>템플릿</th><th>재사용 정책</th></tr></thead>
+    <tbody>
+      <tr><td><code>code-review</code></td><td>일회용. 다른 패치/PR에 절대 재활용 금지. 같은 패치도 코드가 움직였으면 재실행.</td></tr>
+      <tr><td><code>porting-guide</code></td><td>연구 출발점만. 실제 포팅 시 양쪽 트리가 움직였을 가능성 높으므로 재실행 필수.</td></tr>
+      <tr><td><code>feature-impl</code></td><td>머지 전까지만 유효. 머지 후 <code>queries/archive/</code>로 이동 또는 폐기.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====================================================== -->
+<section id="example">
+  <h2><span class="num">5</span>동작 예시 (실전 시나리오)</h2>
+  <p class="subtitle">새 sub-tree 들이고 → 패치 사이클 한 바퀴 → 코드 리뷰 쿼리.</p>
+
+  <h3>시나리오: <code>raw/pcie_scsc/</code> 위키 만들기</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>일회 셋업 — LLM 백엔드 선택</h4>
+        <p><code>config/llm.local.json</code>에 <code>default_profile</code>을 <code>claude</code> 또는 <code>ollama</code>로 지정.</p>
+<pre><code>cp config/llm.example.json config/llm.local.json
+${EDITOR:-vi} config/llm.local.json
+python -m scripts.llm_client --probe        # 연결 검증</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>sub-tree 준비 — local git 보장</h4>
+        <p><code>last_synced_sha</code>는 sub-tree HEAD에서 가져옵니다. git이 아니면 sha는 null이 됩니다 (오류는 아님).</p>
+<pre><code>[ -d raw/pcie_scsc/.git ] || (cd raw/pcie_scsc && git init && \
+    git add . && git commit -m "initial import")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>Stub 일괄 생성 (entity)</h4>
+        <p><code>.c+.h</code> 짝마다 빈 페이지 + <code>coverage.json</code> 등록. idempotent.</p>
+<pre><code>bash scripts/seed_pages.sh --dry-run   # 미리보기
+bash scripts/seed_pages.sh             # 실제 생성</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>(선택) Subsystem / concept layout 제안</h4>
+        <p>여러 파일에 걸친 페이지. LLM이 YAML 제안 → 사람 리뷰 → 결정적 적용.</p>
+<pre><code>python -m scripts.propose_layout --tree raw/pcie_scsc --model claude-sonnet-4-5
+${EDITOR:-vi} wiki/_meta/layout-proposals/pcie_scsc-*.yaml
+python -m scripts.apply_layout wiki/_meta/layout-proposals/pcie_scsc-*.yaml</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>한 페이지 검증 후 batch</h4>
+        <p>먼저 작은 페이지 한 장으로 워크플로 확인, 그 다음 일괄 시드.</p>
+<pre><code># 단일 페이지
+python -m scripts.update_wiki seed-agent \
+    --page raw/pcie_scsc/osal/osal_helper.md \
+    --model claude-sonnet-4-5
+
+# 미채움 페이지 전체 batch
+python -m scripts.seed_all --model claude-sonnet-4-5 --continue
+bash scripts/seed_progress.sh   # 진행 상황</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>정적 사이트 빌드 + 열기</h4>
+<pre><code>python -m scripts.build_site --clean
+xdg-open site/raw/pcie_scsc/mlme.html
+# 검색 기능 (file:// 제약 회피)
+python -m scripts.build_site --serve --bind 127.0.0.1:8000</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>주간 패치 사이클 (cron)</h4>
+        <p>upstream이 움직이면 영향 페이지만 부분 갱신.</p>
+<pre><code># /etc/cron.d/code-llm-wiki
+0 22 * * * cd /path/to/code-llm-wiki && \
+  python -m scripts.sync_subtree --tree raw/pcie_scsc --record --out /tmp/m.json && \
+  python -m scripts.patch_router --manifest /tmp/m.json --apply --out /tmp/r.json && \
+  python -m scripts.update_wiki update --routing /tmp/r.json</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>주간 annealing — stale / 끊긴 링크 수리</h4>
+<pre><code>python -m scripts.anneal scan                    # 후보 점검 (읽기만)
+python -m scripts.anneal run --budget 3          # 상위 3개 수리</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div>
+        <h4>응용 — 패치 리뷰 쿼리 (grounding)</h4>
+<pre><code>python -m scripts.update_wiki query \
+    --template code-review \
+    --input /tmp/patch.diff \
+    --pages raw/pcie_scsc/mlme.md,raw/pcie_scsc/hip.md \
+    --out wiki/queries/2026-05-15-mlme-review.md \
+    --title "mlme: scan timing rework"</code></pre>
+        <p>산출물 front-matter에 참조 페이지 sha · sub-tree sha · 모델 · 시각이 자동 기록됨.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>전체 명령 흐름 시퀀스 다이어그램</h3>
+  <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Dev as 개발자
+    participant Repo as wiki repo
+    participant Sub as raw/pcie_scsc<br/>(local git)
+    participant LLM as LLM 백엔드
+    participant Cov as coverage.json
+    participant Site as site/*.html
+
+    Dev->>Repo: seed_pages.sh
+    Repo->>Sub: ls .c/.h
+    Sub-->>Repo: 파일 목록
+    Repo->>Cov: pages 등록 (last_synced=null)
+    Repo-->>Dev: stub 페이지들
+
+    Dev->>Repo: seed_all --model M
+    loop 각 unfilled 페이지
+      Repo->>LLM: agent loop (Read/Grep)
+      LLM->>Sub: 선택적으로 파일 읽기
+      LLM-->>Repo: ```markdown ... ``` 블록
+      Repo->>Cov: last_synced/sha 기록
+    end
+
+    Note over Sub: upstream에서 git pull
+    Dev->>Repo: sync_subtree --record
+    Repo->>Sub: git fetch + diff vs prev sha
+    Sub-->>Repo: changed files
+    Repo->>Cov: subtree_shas[top] 업데이트
+    Repo->>Cov: covers glob match → 영향 페이지
+    Repo->>LLM: update (page body + diff hunk)
+    LLM-->>Repo: 부분 갱신된 본문
+    Repo->>Cov: last_synced/sha 기록
+
+    Dev->>Repo: build_site --clean
+    Repo->>Site: mkdocs 빌드
+    Site-->>Dev: 정적 HTML
+  </div>
+
+  <h3>샘플 페이지 front-matter</h3>
+<pre><code>---
+title: MLME — scan / connect state machine
+kind: entity
+covers:
+  - pcie_scsc/mlme.c
+  - pcie_scsc/mlme.h
+last_synced_sha: 7a3e9f1b2c8d4e5a6b7c8d9e0f1a2b3c4d5e6f70
+last_synced: 2026-05-17T03:14:00Z
+sources:
+  - pcie_scsc/mlme.c#L100-L320
+  - pcie_scsc/mlme.c#L1850-L2010
+  - pcie_scsc/dev.h#L472-L500
+---
+
+# MLME
+
+MAC-layer state machine. Scan, authentication, association을 관장하며
+HIP 큐를 통해 FW와 FAPI signaling을 주고받는다. ...
+
+See also: [[raw/pcie_scsc/_fapi|FAPI signaling]], [[raw/pcie_scsc/hip|HIP queue]].
+</code></pre>
+</section>
+
+<!-- ====================================================== -->
+<section id="page">
+  <h2><span class="num">6</span>페이지 구조 (front-matter)</h2>
+  <p class="subtitle">페이지가 들고 있는 메타데이터와 그 의미.</p>
+
+  <div class="mermaid">
+flowchart TB
+    subgraph FM["front-matter (YAML)"]
+      direction TB
+      A["title<br/>사람이 읽는 이름"]
+      B["kind<br/>entity / subsystem / concept / query"]
+      C["covers []<br/>KERNEL_ROOT 기준 glob"]
+      D["last_synced_sha<br/>sub-tree HEAD at write"]
+      E["last_synced<br/>ISO-8601 UTC"]
+      F["sources []<br/>실제로 본 파일 + 라인 범위"]
+    end
+
+    subgraph Body["본문"]
+      direction TB
+      G["사람이 읽는 설명"]
+      H["[[raw/&lt;top&gt;/&lt;basename&gt;|표시]]<br/>Obsidian 상호 링크"]
+    end
+
+    C -.->|glob match| ROUTING([patch_router 라우팅])
+    D -.->|stale 점수| ANNEAL([anneal])
+    F -.->|provenance 감사| AUDIT([쿼리 재현])
+    H -.->|끊긴 링크 감지| ANNEAL
+
+    classDef meta fill:#fef3c7,stroke:#a16207
+    classDef body fill:#dbeafe,stroke:#1e40af
+    classDef use fill:#e0e7ff,stroke:#3730a3
+    class A,B,C,D,E,F meta
+    class G,H body
+    class ROUTING,ANNEAL,AUDIT use
+  </div>
+
+  <table>
+    <thead><tr><th>필드</th><th>의미</th><th>누가 갱신</th></tr></thead>
+    <tbody>
+      <tr><td><code>title</code></td><td>사람이 읽는 페이지 이름</td><td>LLM (시드 시)</td></tr>
+      <tr><td><code>kind</code></td><td>entity (1 TU) / subsystem (여러 파일 강결합) / concept (cross-cutting) / query</td><td>stub 생성 시 결정</td></tr>
+      <tr><td><code>covers[]</code></td><td>라우팅의 핵심. patch_router가 이걸 glob match해서 영향 페이지를 정함</td><td>seed_pages.sh / apply_layout</td></tr>
+      <tr><td><code>last_synced_sha</code></td><td>이 페이지가 작성된 시점의 sub-tree HEAD</td><td>seed-agent / update / anneal</td></tr>
+      <tr><td><code>last_synced</code></td><td>ISO-8601 UTC. anneal의 stale 점수 입력</td><td>동일</td></tr>
+      <tr><td><code>sources[]</code></td><td>실제로 본 파일 + 라인 범위. provenance 핵심 — “이 결론이 어디서 나왔나” 추적</td><td>LLM (본문 작성 시 자기 기록)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====================================================== -->
+<section id="future">
+  <h2><span class="num">7</span>향후 개선 방향</h2>
+  <p class="subtitle">팀이 같이 고민해볼 만한 방향 — 우선순위 / 비용 / 위험으로 분류.</p>
+
+  <div class="mermaid">
+quadrantChart
+    title 개선 후보: 가치 × 난이도
+    x-axis "구현 난이도 (낮음 → 높음)"
+    y-axis "기대 가치 (낮음 → 높음)"
+    quadrant-1 "Quick wins"
+    quadrant-2 "전략 과제"
+    quadrant-3 "여유 시"
+    quadrant-4 "재고 필요"
+    "다국어 페이지": [0.3, 0.6]
+    "Diff 가시화 UI": [0.4, 0.75]
+    "PR 봇 통합": [0.55, 0.85]
+    "임베딩 검색": [0.7, 0.8]
+    "테스트 커버리지 매핑": [0.5, 0.55]
+    "비용 대시보드": [0.25, 0.5]
+    "incremental anneal scoring": [0.4, 0.45]
+    "multi-LLM voting": [0.85, 0.6]
+    "graph DB 백엔드": [0.9, 0.45]
+  </div>
+
+  <h3>7.1  단기 (Quick Wins — 한두 PR이면 됨)</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🪙</div>
+      <h4>비용 / 토큰 대시보드</h4>
+      <p>seed/update 호출마다 토큰·시간·모델을 <code>_meta/cost.jsonl</code>에 append.
+      주별 집계를 mkdocs 페이지로.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔍</div>
+      <h4>Diff 가시화</h4>
+      <p>update 호출의 before/after 페이지 diff를 <code>queries/_diff/</code>에 보관.
+      리뷰어가 “LLM이 뭘 바꿨나” 한눈에.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🌐</div>
+      <h4>한 페이지, 다국어 본문</h4>
+      <p>front-matter에 <code>lang: ko</code> 추가, 같은 covers에 영문 버전.
+      onboarding 자료로 활용.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📈</div>
+      <h4>Incremental anneal scoring</h4>
+      <p>매 사이클마다 전체 스캔 대신 cov 변경분만 재점수. 큰 위키일수록 효과 큼.</p>
+    </div>
+  </div>
+
+  <h3>7.2  중기 (전략 과제 — 디자인 의사결정 필요)</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h4>GitHub PR 봇 통합</h4>
+      <p>PR 열리면 자동으로 <code>code-review</code> 쿼리 실행 → 코멘트.
+      재사용 정책 강제 (PR마다 새로 실행).</p>
+    </div>
+    <div class="card">
+      <div class="icon">🧭</div>
+      <h4>임베딩 기반 의미 검색</h4>
+      <p>현재 mkdocs 기본 검색은 키워드 기반. 페이지 벡터를
+      <code>_meta/embeddings.jsonl</code>에 캐시하고 cosine 검색 추가.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🧪</div>
+      <h4>테스트 ↔ 페이지 매핑</h4>
+      <p><code>covers[]</code>에 테스트 파일도 포함. “이 함수의 테스트는 어디?”
+      를 페이지에서 바로.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🪞</div>
+      <h4>multi-tree 의존성 그래프</h4>
+      <p><code>sources[]</code>를 cross-tree로 확장. <code>raw/scsc-firmware</code>가
+      <code>raw/pcie_scsc</code>를 참조하는 페이지를 묶음.</p>
+    </div>
+  </div>
+
+  <h3>7.3  장기 (R&amp;D — 검증 필요)</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🗳️</div>
+      <h4>multi-LLM voting / critique</h4>
+      <p>두 모델이 같은 페이지를 시드 → 세 번째 모델이 reconciler. 비용 3배지만
+      중요 페이지에 한정 가능.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🕸️</div>
+      <h4>Graph DB 백엔드</h4>
+      <p><code>coverage.json</code> 한 파일이 너무 커지면 graph DB로.
+      현재 규모(수백 페이지)에선 과한 최적화.</p>
+    </div>
+    <div class="card">
+      <div class="icon">⏪</div>
+      <h4>시간 여행 (sha별 페이지 스냅샷)</h4>
+      <p>“6개월 전 mlme.c는 어떻게 설명됐었나” — 페이지 히스토리를 git tag로
+      자동 마킹. 포팅·디버깅에 유용.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🛡️</div>
+      <h4>Adversarial 검증</h4>
+      <p>LLM이 자기가 쓴 페이지를 다른 페이지·소스에 모순되는지 자동 점검.
+      anneal의 한 카테고리로.</p>
+    </div>
+  </div>
+
+  <h3>7.4  운영 개선 후보</h3>
+  <div class="mermaid">
+flowchart LR
+    A[현재] --> B[좋은 default]
+    A --> C[관측성]
+    A --> D[안전성]
+
+    B --> B1["seed_all 기본 batch size<br/>= sub-tree 규모로 자동 산정"]
+    B --> B2["anneal --budget 자동 추천<br/>(주당 토큰 예산 기반)"]
+
+    C --> C1["site/에 사내 대시보드<br/>(coverage %, stale, 비용)"]
+    C --> C2["Slack 알림<br/>uncovered backlog 30+면 ping"]
+
+    D --> D1["pre-commit hook<br/>front-matter 스키마 검증"]
+    D --> D2["LLM 출력 sanity check<br/>(빈 본문 / 깨진 링크 거부)"]
+    D --> D3["dry-run 기본화<br/>--apply 필요"]
+  </div>
+
+  <div class="callout note">
+    <strong>제안.</strong> 이 중 어떤 항목부터 손댈지 다음 팀 미팅에서 투표하면 좋겠습니다.
+    개인적으로는 <strong>비용 대시보드</strong> + <strong>PR 봇 통합</strong>이 ROI가 가장 클 것으로 봅니다 —
+    전자는 운영 가시성이 즉시 좋아지고, 후자는 위키가 “쌓아두기만 하는 자료”가 아니라
+    “리뷰에 실제로 끼어드는 도구”가 되기 때문입니다.
+  </div>
+</section>
+
+<!-- ====================================================== -->
+<section id="faq">
+  <h2><span class="num">8</span>팀이 자주 묻는 것</h2>
+
+  <h3>Q. 왜 위키를 LLM에 맡기나요? 사람이 쓰는 게 더 정확하지 않나요?</h3>
+  <p>
+    정확성은 그렇습니다. 문제는 <strong>유지보수성</strong>입니다. 코드는 매일 움직이는데 사람이 쓴 위키는
+    6개월이면 stale이 됩니다. 이 시스템은 “LLM이 처음 한 번은 덜 정확해도, 패치 사이클로 따라가는
+    비용이 사람보다 훨씬 낮다”는 가정에 베팅합니다. provenance를 강제해서 의심 시 추적 가능한 게 안전망입니다.
+  </p>
+
+  <h3>Q. LLM이 거짓말을 쓰면 어떻게 알아채나요?</h3>
+  <p>
+    완벽한 방어는 없습니다. 대신 세 가지 장치가 있습니다 — (1) <code>sources[]</code>에 LLM이 “내가 본 파일과
+    라인”을 자기 기록하므로 검증 가능, (2) <code>code-review</code>처럼 응용 쿼리는 <strong>재사용 금지</strong>
+    정책으로 “stale을 신선해 보이게” 만드는 함정 차단, (3) annealer가 끊긴 링크나 covers drift를 surface.
+  </p>
+
+  <h3>Q. 로컬 ollama로 정말 쓸만한가요?</h3>
+  <p>
+    페이지당 1시간 가까이 걸리고 품질은 Sonnet보다 떨어집니다. <strong>야간 batch</strong>이나
+    <strong>비용 0이 절대 조건인 환경</strong>에 한정해서 권장. 본격 운영은 Sonnet 4.6 권장.
+    API 인터페이스가 동일해서 코드 변경 없이 스위치 가능한 게 장점입니다.
+  </p>
+
+  <h3>Q. 다른 언어 / 프로젝트에도 쓸 수 있나요?</h3>
+  <p>
+    네. <code>seed_pages.sh</code>의 <code>find</code> 패턴만 손보면 <code>.py</code>, <code>.go</code>,
+    <code>.rs</code> 등 어떤 언어든 동작합니다. 단 entity의 기본 단위인 “TU”가 언어마다 달라서
+    (Python은 모듈, Go는 패키지) layout 단계에서 조정이 필요합니다.
+  </p>
+</section>
+
+<footer>
+  code-llm-wiki · 팀 내부 소개 자료 · 최신 정보는 <code>README.md</code>와 <code>CLAUDE.md</code> 참조
+</footer>
+
+</div>
+</body>
+</html>
