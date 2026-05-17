@@ -1,0 +1,239 @@
+---
+template: layout-proposal
+produced: 2026-05-17T03:18:06Z
+tree: raw/pcie_scsc
+sha: de8720511fda4cd10d6d358ad754412658bf9024
+llm_profile: "(in-conversation agent — no api key)"
+llm_model: claude-opus-4-7
+exclude: [kunit, test, wiki]
+---
+
+subsystems:
+  - title: "MLME Control Path"
+    basename: "_mlme_overview"
+    covers:
+      - "pcie_scsc/mlme.c"
+      - "pcie_scsc/mlme.h"
+      - "pcie_scsc/mlme_nan.c"
+      - "pcie_scsc/sap_mlme.c"
+      - "pcie_scsc/sap_mlme.h"
+    rationale: "MLME (MAC sub-layer management entity) issues FAPI req signals to firmware and dispatches cfm/ind responses via SAP_MLME. mlme.c/.h hold the request builders (slsi_mlme_*), sap_mlme.c is the rx demultiplexer for MLME-SAP signals, and mlme_nan.c specializes the same machinery for NAN. They share waiter/timeout infrastructure (sig_wait) and the fapi signal helpers, forming one tightly coupled control plane."
+
+  - title: "HIP Transport (Host Interface Protocol)"
+    basename: "_hip_transport"
+    covers:
+      - "pcie_scsc/hip.c"
+      - "pcie_scsc/hip.h"
+      - "pcie_scsc/hip_bh.h"
+      - "pcie_scsc/hip4.c"
+      - "pcie_scsc/hip4.h"
+      - "pcie_scsc/hip5.c"
+      - "pcie_scsc/hip5.h"
+      - "pcie_scsc/hip4_sampler.c"
+      - "pcie_scsc/hip4_sampler.h"
+      - "pcie_scsc/hip4_smapper.c"
+      - "pcie_scsc/hip4_smapper.h"
+      - "pcie_scsc/mbulk.c"
+      - "pcie_scsc/mbulk.h"
+      - "pcie_scsc/mbulk_def.h"
+    rationale: "hip.c is the OS-facing HIP wrapper (slsi_hip_init/setup/start/transmit_frame); hip4/hip5 are the two alternative low-level shared-memory transports selected by CONFIG_SCSC_WLAN_HIP5; mbulk is the shared memory buffer pool both use; hip4_sampler/smapper are HIP4-side profiling/SMAPPER helpers. Together they implement the host<->firmware bus."
+
+  - title: "SAP Dispatch (Service Access Points)"
+    basename: "_sap_layer"
+    covers:
+      - "pcie_scsc/sap.h"
+      - "pcie_scsc/sap_mlme.c"
+      - "pcie_scsc/sap_mlme.h"
+      - "pcie_scsc/sap_ma.c"
+      - "pcie_scsc/sap_ma.h"
+      - "pcie_scsc/sap_dbg.c"
+      - "pcie_scsc/sap_dbg.h"
+      - "pcie_scsc/sap_test.c"
+      - "pcie_scsc/sap_test.h"
+    rationale: "sap.h defines the sap_api contract (sap_class, sap_handler, sap_txdone, sap_notifier) and the four classes MLME/MA/DBG/TST. Each sap_*.c registers a sap_api with slsi_hip_sap_register and demuxes inbound skbs for its class. They share the same dispatch contract and are the boundary between HIP transport and upper-layer code."
+
+  - title: "TX Data Plane"
+    basename: "_tx_data_plane"
+    covers:
+      - "pcie_scsc/tx.c"
+      - "pcie_scsc/tx.h"
+      - "pcie_scsc/tx_api.h"
+      - "pcie_scsc/txbp.c"
+      - "pcie_scsc/txbp.h"
+      - "pcie_scsc/scsc_wifi_fcq.c"
+      - "pcie_scsc/scsc_wifi_fcq.h"
+      - "pcie_scsc/traffic_monitor.c"
+      - "pcie_scsc/traffic_monitor.h"
+    rationale: "Two mutually-exclusive TX implementations live behind CONFIG_SCSC_WLAN_TX_API: legacy tx.c + scsc_wifi_fcq (per-peer flow-controlled queues) vs. the newer txbp.c (TX back-pressure/zero-copy path) exposed by tx_api.h. traffic_monitor feeds AC/throughput signals consumed by both. Together they form the host-side data path before HIP."
+
+  - title: "RX Data Plane"
+    basename: "_rx_data_plane"
+    covers:
+      - "pcie_scsc/rx.c"
+      - "pcie_scsc/ba.c"
+      - "pcie_scsc/ba.h"
+      - "pcie_scsc/ba_replay.c"
+      - "pcie_scsc/sap_ma.c"
+      - "pcie_scsc/sap_ma.h"
+    rationale: "Inbound data from firmware enters via SAP_MA (sap_ma.c), goes through rx.c (slsi_rx_*) which delivers to the netif, and is reordered/deduplicated by ba.c/ba_replay.c (BlockAck reorder buffer). They form one cohesive ingress pipeline for 802.11 data frames."
+
+  - title: "Netdev / VIF Lifecycle"
+    basename: "_netdev_vif"
+    covers:
+      - "pcie_scsc/netif.c"
+      - "pcie_scsc/netif.h"
+      - "pcie_scsc/if_vif.c"
+      - "pcie_scsc/cfg80211_ops.c"
+      - "pcie_scsc/cfg80211_ops.h"
+    rationale: "cfg80211_ops.c registers the wiphy callbacks (scan/connect/AP/etc.) and is the entry point from the kernel's cfg80211 layer; netif.c/.h and if_vif.c implement struct net_device + netdev_vif creation, queue mapping, and lifecycle. They cooperate to materialize each virtual interface (STA/AP/P2P/NAN) on top of the firmware."
+
+  - title: "Device Init & Service Management"
+    basename: "_device_lifecycle"
+    covers:
+      - "pcie_scsc/dev.c"
+      - "pcie_scsc/dev.h"
+      - "pcie_scsc/cm_if.c"
+      - "pcie_scsc/scsc_wifi_cm_if.h"
+      - "pcie_scsc/mgt.c"
+      - "pcie_scsc/mgt.h"
+      - "pcie_scsc/hanged_record.h"
+    rationale: "dev.c is the module entry that builds slsi_dev; cm_if.c is the WLBT core-manager glue that opens/closes the wlan service with the chip subsystem; mgt.c centralizes slsi_dev_attach/detach, start/stop, recovery, and hanged-record handling. Together they own the chip-level lifecycle that everything else depends on."
+
+  - title: "MIB Configuration"
+    basename: "_mib_subsystem"
+    covers:
+      - "pcie_scsc/mib.c"
+      - "pcie_scsc/mib.h"
+      - "pcie_scsc/mib_text_convert.c"
+      - "pcie_scsc/mib_text_convert.h"
+    rationale: "mib.c implements get/set encoder/decoder for the firmware MIB (PSID/OID-style key-value store) used by mlme to push runtime config to firmware; mib_text_convert converts human-readable MIB text into the on-wire encoding. They are a self-contained codec subsystem."
+
+  - title: "User Interfaces (procfs / ioctl / UDI / mmap)"
+    basename: "_user_ifaces"
+    covers:
+      - "pcie_scsc/procfs.c"
+      - "pcie_scsc/procfs.h"
+      - "pcie_scsc/ioctl.c"
+      - "pcie_scsc/ioctl.h"
+      - "pcie_scsc/udi.c"
+      - "pcie_scsc/udi.h"
+      - "pcie_scsc/unifiio.h"
+      - "pcie_scsc/scsc_wlan_mmap.c"
+      - "pcie_scsc/scsc_wlan_mmap.h"
+      - "pcie_scsc/dpd_mmap.c"
+      - "pcie_scsc/dpd_mmap.h"
+    rationale: "All non-cfg80211 entrypoints from userspace: procfs.c exposes status nodes; ioctl.c handles private SIOCDEVPRIVATE/Android wifi ioctls; udi.c is the unifiio character device for raw signal injection; the mmap files expose firmware shared memory (incl. host-DPD) to user space. They are sibling user-facing surfaces but otherwise independent of each other."
+
+  - title: "Vendor / NL80211 Surface"
+    basename: "_vendor_nl80211"
+    covers:
+      - "pcie_scsc/nl80211_vendor.c"
+      - "pcie_scsc/nl80211_vendor.h"
+      - "pcie_scsc/nl80211_vendor_nan.c"
+      - "pcie_scsc/nl80211_vendor_nan.h"
+      - "pcie_scsc/lls.c"
+      - "pcie_scsc/lls.h"
+    rationale: "nl80211_vendor.c registers the Samsung/Google vendor subcmds (GScan, RTT, link-layer-stats, key-mgmt-offload, etc.) on top of cfg80211; nl80211_vendor_nan.c specializes the vendor interface for NAN discovery/data-path; lls.c is the Link-Layer-Stats backing data store the vendor cmds report. They share the vendor-cmd dispatch and reply marshalling."
+
+  - title: "WiFi Logger Ring Subsystem"
+    basename: "_wifi_logger"
+    covers:
+      - "pcie_scsc/scsc_wifilogger.h"
+      - "pcie_scsc/scsc_wifilogger_api.c"
+      - "pcie_scsc/scsc_wifilogger_core.c"
+      - "pcie_scsc/scsc_wifilogger_core.h"
+      - "pcie_scsc/scsc_wifilogger_internal.c"
+      - "pcie_scsc/scsc_wifilogger_internal.h"
+      - "pcie_scsc/scsc_wifilogger_module.c"
+      - "pcie_scsc/scsc_wifilogger_module.h"
+      - "pcie_scsc/scsc_wifilogger_debugfs.c"
+      - "pcie_scsc/scsc_wifilogger_debugfs.h"
+      - "pcie_scsc/scsc_wifilogger_rings.h"
+      - "pcie_scsc/scsc_wifilogger_types.h"
+      - "pcie_scsc/scsc_wifilogger_ring_connectivity.c"
+      - "pcie_scsc/scsc_wifilogger_ring_connectivity.h"
+      - "pcie_scsc/scsc_wifilogger_ring_connectivity_api.h"
+      - "pcie_scsc/scsc_wifilogger_ring_pktfate.c"
+      - "pcie_scsc/scsc_wifilogger_ring_pktfate.h"
+      - "pcie_scsc/scsc_wifilogger_ring_pktfate_api.h"
+      - "pcie_scsc/scsc_wifilogger_ring_wakelock.c"
+      - "pcie_scsc/scsc_wifilogger_ring_wakelock.h"
+      - "pcie_scsc/scsc_wifilogger_ring_wakelock_api.h"
+      - "pcie_scsc/scsc_wifilogger_ring_test.c"
+      - "pcie_scsc/scsc_wifilogger_ring_test.h"
+    rationale: "Builds as its own kernel module (scsc_wifilogger.ko in the Makefile). Core/api/internal/module own the ring-buffer infrastructure and the Android wifi-hal-compatible API; ring_connectivity/pktfate/wakelock/test are concrete ring instances. All files share the scsc_wlc_* internal API and ring registry."
+
+  - title: "Debug / Trace / Crash Diagnostics"
+    basename: "_debug_diagnostics"
+    covers:
+      - "pcie_scsc/debug.c"
+      - "pcie_scsc/debug.h"
+      - "pcie_scsc/debug_frame.c"
+      - "pcie_scsc/log_clients.c"
+      - "pcie_scsc/log_clients.h"
+      - "pcie_scsc/log2us.c"
+      - "pcie_scsc/log2us.h"
+      - "pcie_scsc/fw_test.c"
+      - "pcie_scsc/fw_test.h"
+      - "pcie_scsc/slsi_tracepoint_debug.c"
+      - "pcie_scsc/slsi_tracepoint_debug.h"
+    rationale: "debug.c/debug_frame.c provide the logging macros and on-the-fly frame decoders; log_clients is the pub-sub registry that lets udi/sap_dbg subscribe to in/out signals; log2us emits Android event log lines from connection events; fw_test injects synthetic signals for firmware-less testing; slsi_tracepoint_debug wires ftrace tracepoints. Together they form the observability stack."
+
+  - title: "Regulatory & Channel Management"
+    basename: "_regulatory"
+    covers:
+      - "pcie_scsc/reg_info.c"
+      - "pcie_scsc/reg_info.h"
+      - "pcie_scsc/channels.h"
+      - "pcie_scsc/cac.c"
+      - "pcie_scsc/cac.h"
+      - "pcie_scsc/conc_modes.c"
+    rationale: "reg_info.c maintains the per-country/regdomain table that filters channel/power, channels.h declares the canonical band tables they index, cac.c implements DFS/CAC (Channel Availability Check) state, and conc_modes.c arbitrates concurrent-interface channel selection. They jointly police what RF parameters are legal at any moment."
+
+  - title: "Platform Notifiers & OSAL"
+    basename: "_platform_glue"
+    covers:
+      - "pcie_scsc/osal/slsi_wakelock.h"
+      - "pcie_scsc/panel_notifier.c"
+      - "pcie_scsc/panel_notifier.h"
+      - "pcie_scsc/ril_notifier.c"
+      - "pcie_scsc/ril_notifier.h"
+      - "pcie_scsc/slsi_cpuhp_monitor.c"
+      - "pcie_scsc/slsi_cpuhp_monitor.h"
+      - "pcie_scsc/porting_imx.h"
+    rationale: "Thin OS-abstraction / platform-event consumers: slsi_wakelock wraps pm_wakeup; panel_notifier reacts to LCD on/off (suspend hints); ril_notifier listens to modem state for WLAN/CP coexistence; slsi_cpuhp_monitor watches CPU hotplug to rebind NAPI; porting_imx.h is a platform-port shim. They share react-to-a-kernel-or-SoC-event-and-poke-the-driver as their reason for existing."
+
+concepts:
+  - title: "FAPI Signaling Protocol"
+    basename: "_concept_fapi"
+    covers:
+      - "pcie_scsc/fapi.h"
+    rationale: "fapi.h is the auto-generated wire format describing every host<->firmware signal (FAPI_SIG_TYPE_REQ/CFM/RES/IND, FAPI_SAP_TYPE_MA/MLME/DEBUG/TEST, all IE/attribute constants). It is included by ~25 .c files spanning MLME, SAPs, HIP, debug, and vendor code; it owns no implementation files itself, so it is a contract rather than a subsystem."
+
+  - title: "Virtual Interface & Peer Model"
+    basename: "_concept_vif_peer"
+    covers:
+      - "pcie_scsc/dev.h"
+      - "pcie_scsc/const.h"
+    rationale: "struct slsi_dev / netdev_vif / slsi_peer / slsi_vif_sta etc. are declared in dev.h and the associated enums in const.h; almost every .c file dereferences them. They define the cross-cutting state model (per-radio, per-VIF, per-peer) that the rest of the driver mutates — not a runnable subsystem but the central data-model contract."
+
+  - title: "Transmit Adaptive Control (TAS family)"
+    basename: "_concept_tas"
+    covers:
+      - "pcie_scsc/dctas.c"
+      - "pcie_scsc/dctas.h"
+    rationale: "TAS / ICTAS / DCTAS are three mutually-exclusive Tx-power adaptive-scaling schemes (dev.h enforces only-one-TAS-configuration via #error). dctas.c is the in-tree implementation; the concept page should document the FAPI signaling and policy choice rather than just the one file, because the same SAR/back-off contract is consumed by mlme.c, mgt.c, and the HIP layers when applying per-band power caps."
+
+  - title: "Load Balance & NAPI Scheduling"
+    basename: "_concept_load_balance"
+    covers:
+      - "pcie_scsc/load_manager.c"
+      - "pcie_scsc/load_manager.h"
+    rationale: "load_manager (slsi_lbm_*) is the cross-cutting CPU/NAPI placement policy: hip4/hip5 register their BHs with it, traffic_monitor and cpuhp_monitor feed it events, and netif/tx ask it where to schedule. It exposes a contract used throughout the data plane and is conditionally compiled (CONFIG_SCSC_WLAN_LOAD_BALANCE_MANAGER), so a concept page is more useful than treating it as a subsystem."
+
+  - title: "Local Packet Capture (LPC)"
+    basename: "_concept_lpc"
+    covers:
+      - "pcie_scsc/local_packet_capture.c"
+      - "pcie_scsc/local_packet_capture.h"
+    rationale: "Optional pcap-style intercept enabled by CONFIG_SLSI_WLAN_LPC. It taps both tx.c/txbp.c egress and rx.c ingress, builds radiotap frames, and ships them to a monitor netdev. Cross-cuts the data plane without owning a pipeline of its own."
