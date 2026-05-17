@@ -5,11 +5,13 @@
 
 ## 1. 레이어
 
-| 디렉토리 | 소유 | 규칙 |
+| 디렉토리 / 파일 | 소유 | 규칙 |
 |---|---|---|
 | `raw/<top>/` | 사용자 | 각 sub-tree는 별도 local git clone. `raw/*`는 wiki repo에서 gitignore. **불변** — LLM은 읽기만 한다. |
-| `wiki/` | LLM | LLM이 모든 페이지를 생성·갱신한다. 사람은 직접 편집 금지. |
-| `wiki/_meta/` | LLM | `coverage.json`, `todo.md` — 도구가 갱신한다. |
+| `wiki/raw/<top>/*.md` | LLM | 소스 유도 페이지 (`kind: entity`/`subsystem`/`concept`). LLM이 생성·갱신. 사람은 직접 편집 금지. |
+| `wiki/queries/*.md` | LLM | 쿼리 산출물. `update_wiki query`가 생성. 사람은 직접 편집 금지. |
+| `wiki/index.md`, `wiki/raw/<top>/_index.md` | 도구 / 사람 | 구조·인덱스 페이지. `_index.md`는 `seed_pages.sh`가 자동 생성, `index.md`는 사람이 PR로. `covers:`가 비어 있어 LLM이 유도할 근거가 없음. |
+| `wiki/_meta/` | LLM | `coverage.json`, `todo.md` — 도구가 갱신. |
 | `CLAUDE.md`, `scripts/`, `config/` | 사람 + LLM | 사람이 리뷰. PR로 변경. |
 
 `KERNEL_ROOT`는 `raw/` (sub-tree의 부모). `covers:` 글로브와 페이지 sha 해석 모두 이 기준.
