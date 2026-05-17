@@ -33,8 +33,7 @@ sources:             # 페이지 작성 시 LLM이 실제로 읽은 파일들 + 
 ---
 ```
 
-상호 링크는 `[[concepts/rcu|RCU]]` 같은 위키 링크 표기를 쓴다.
-끊긴 링크는 annealing 잡이 감지한다.
+상호 링크는 Obsidian 스타일 `[[raw/<top>/<basename>|표시명]]`. 페이지는 `wiki/raw/<top>/`에 mirror되어 있으므로 target은 `wiki/` 기준 상대 경로 — 예: `[[raw/pcie_scsc/_concept_fapi|FAPI signaling]]`. 끊긴 링크는 annealing 잡이 감지한다.
 
 ## 3. 워크플로
 
@@ -80,7 +79,7 @@ sources:             # 페이지 작성 시 LLM이 실제로 읽은 파일들 + 
 
 LLM이 코드 리뷰 / 포팅 / 기능 추가에 위키를 활용할 때:
 
-1. 먼저 `wiki/index.md` → 관련 `subsystems/*` / `concepts/*` 페이지를 읽는다.
+1. 먼저 `wiki/index.md` → 관련 sub-tree(`wiki/raw/<top>/`)의 페이지를 읽는다. 아키텍처 페이지(`_*.md`, `kind: subsystem`/`concept`)를 먼저 보면 큰 그림을 빨리 잡는다.
 2. 부족하면 `covers:`에 적힌 raw 파일을 직접 본다.
 3. 산출물은 `wiki/queries/<slug>.md`에 저장하고, **provenance**(템플릿 ID, 참조한
    페이지들과 각자의 `last_synced_sha`, 커널 HEAD sha, 모델, 시각)를 같이 적는다.

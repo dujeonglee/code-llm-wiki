@@ -7,9 +7,9 @@ accumulates even when nobody pushes code:
 * a page hasn't been re-read in a long time and may have grown inaccurate;
 * a page's ``covers`` patterns now match nothing because files were renamed
   or deleted upstream;
-* a page links to ``[[concepts/foo]]`` but ``wiki/concepts/foo.md`` doesn't
-  exist;
-* files in ``raw/linux/`` that no page documents — already tracked by
+* a page links to ``[[raw/<top>/foo]]`` but ``wiki/raw/<top>/foo.md``
+  doesn't exist;
+* files in ``raw/<top>/`` that no page documents — already tracked by
   ``patch_router --apply`` in ``wiki/_meta/todo.md``; we surface them here
   so the dashboard is one place.
 

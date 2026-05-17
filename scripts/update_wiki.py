@@ -86,8 +86,11 @@ Hard rules:
          - <path or path#Lstart-Lend>
        ---
 
-3. Cross-link with Obsidian-style [[wiki-links]]. Use the page path relative
-   to wiki/ as the link target, e.g. `[[concepts/rcu|RCU]]`.
+3. Cross-link with Obsidian-style [[wiki-links]]. Pages mirror raw/ at
+   wiki/raw/<top>/<basename>.md, so the link target is that path relative
+   to wiki/ — e.g. `[[raw/pcie_scsc/_concept_fapi|FAPI]]`. NEVER use the
+   old category-style `[[concepts/...]]` / `[[subsystems/...]]` paths;
+   those directories don't exist.
 4. Be concrete. Reference function names, struct names, and file paths.
    Use fenced code blocks for C snippets and Mermaid for diagrams.
 5. NEVER fabricate symbols. If unsure, omit rather than invent.
