@@ -18,20 +18,27 @@
 flowchart TD
     upstream([External upstream])
     raw[("raw/&lt;top&gt;/<br/>local git, gitignored")]
-    stub["wiki/raw/&lt;top&gt;/*.md<br/>stub"]
-    filled["wiki/raw/&lt;top&gt;/*.md<br/>filled"]
+    proposal["wiki/_meta/layout-proposals/<br/>*.yaml (reviewable)"]
+    stub_entity["wiki/raw/&lt;top&gt;/&lt;file&gt;.md<br/>entity stub (.c+.h)"]
+    stub_arch["wiki/raw/&lt;top&gt;/_*.md<br/>subsystem/concept stub"]
+    filled["wiki/raw/&lt;top&gt;/*.md<br/>filled (body written)"]
     cov[("wiki/_meta/coverage.json")]
     queries["wiki/queries/*.md<br/>audit trail"]
     site["site/*.html<br/>file://"]
 
     upstream -. "git clone / pull" .-> raw
 
-    raw -->|"(1) scripts/seed_pages.sh"| stub
-    raw -->|"page → covers 매핑"| cov
+    raw -->|"(1a) scripts/seed_pages.sh<br/>deterministic .c+.h grouping"| stub_entity
+    raw -->|"(1b) propose_layout<br/>claude-agent-sdk · Read/Grep"| proposal
+    proposal -->|"human review +<br/>(1c) apply_layout<br/>deterministic stub writer"| stub_arch
 
-    stub -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
+    stub_entity --> cov
+    stub_arch --> cov
 
-    raw -->|"(3) git pull →<br/>patch_router (cov 사용) →<br/>update_wiki update<br/>llm_client (one-shot HTTP)"| filled
+    stub_entity -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
+    stub_arch   -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
+
+    raw -->|"(3) sync_subtree → patch_router (cov 사용)<br/>→ update_wiki update<br/>llm_client (one-shot HTTP)"| filled
 
     filled -->|"(4) anneal.py (cron)<br/>stale / broken-link / drift 수리"| filled
 
@@ -41,17 +48,24 @@ flowchart TD
 
     classDef immutable fill:#fef3c7,stroke:#a16207,color:#000
     classDef llm fill:#dbeafe,stroke:#1e40af,color:#000
+    classDef review fill:#fce7f3,stroke:#9d174d,color:#000
     classDef artifact fill:#dcfce7,stroke:#15803d,color:#000
 
     class upstream,raw immutable
-    class stub,filled,cov,queries llm
+    class stub_entity,stub_arch,filled,cov,queries llm
+    class proposal review
     class site artifact
 ```
 
 - **노란색** — 사용자 소유, 불변.
+- **분홍색** — LLM 제안, 사람 리뷰 게이트 (apply 전 편집 가능).
 - **파란색** — LLM이 만들고 유지하는 파일들. wiki repo의 일부.
 - **초록색** — 빌드 산출물 (gitignored).
 - 점선 — 1회성 / 비주기 이벤트 (clone, query). 실선 — 자동화에 자주 등장하는 흐름.
+
+**페이지 stub 두 갈래** (1a vs 1b+1c)
+- `entity` — 한 translation unit (`.c`+`.h`)에 1:1 대응. 결정적이므로 `seed_pages.sh`가 바로 만든다.
+- `subsystem` / `concept` — 여러 파일에 걸친 아키텍처 단위. 코드 구조를 봐야 잘 묶이므로 LLM이 **YAML 제안**을 만들고 (`propose_layout`), 사람이 리뷰·수정 후 `apply_layout`이 결정적으로 stub을 쓴다. 일반 LLM 호출과 달리 layout 결정은 retroactive 수정 비용이 크므로 — 한 페이지가 잘못 묶이면 그 위에 쌓인 본문, sources, query 흔적 모두 헛것이 된다 — 이 한 단계만 사람 게이트를 둔다.
 
 | 레이어 | 소유 | 역할 |
 |---|---|---|
@@ -119,6 +133,29 @@ bash scripts/seed_pages.sh                      # 실제 생성
 ```
 
 `.c`/`.h` 짝 단위로 `wiki/raw/<top>/*.md` 스텁 생성 + `coverage.json`에 등록. idempotent (재실행해도 기존 페이지 보존). 다른 확장자(`.py`/`.go` 등) sub-tree로 쓸 일이 있으면 `seed_pages.sh`의 `find` 패턴 손보면 됩니다.
+
+### 2b. (선택) Subsystem / concept 페이지 제안
+
+`seed_pages.sh`는 `.c`/`.h` 짝마다 `entity` 페이지만 만듭니다. **여러 파일에 걸친 subsystem이나 cross-cutting concept** 페이지가 필요하면 LLM에 layout 제안을 받아 사람이 리뷰 후 적용합니다:
+
+```bash
+# (1) LLM에게 sub-tree를 읽고 YAML 제안을 작성하라고 시킴
+python -m scripts.propose_layout \
+    --tree raw/pcie_scsc --model claude-sonnet-4-5
+# → wiki/_meta/layout-proposals/pcie_scsc-<timestamp>.yaml
+
+# (2) 파일을 열어 리뷰. title / basename / covers / rationale 직접 수정 OK.
+${EDITOR:-vi} wiki/_meta/layout-proposals/pcie_scsc-*.yaml
+
+# (3) 결정적 runner가 stub을 쓰고 coverage.json에 등록
+python -m scripts.apply_layout wiki/_meta/layout-proposals/pcie_scsc-*.yaml \
+    --dry-run                                  # 먼저 미리보기
+python -m scripts.apply_layout wiki/_meta/layout-proposals/pcie_scsc-*.yaml
+```
+
+`basename`은 보통 `_mlme_overview`처럼 `_` prefix를 둬서 entity 페이지와 정렬상 구분합니다. 적용된 stub은 다음 단계의 `seed-agent`가 다른 stub과 똑같이 채웁니다.
+
+> 단계 1과 3을 분리한 이유: layout 결정은 한 번 잘못되면 그 위에 쌓이는 본문·sources·query 흔적이 모두 헛것이 되므로 사람 게이트가 가장 큰 이득. YAML 제안은 diff-friendly·재현 가능하고, apply 쪽은 LLM 호출이 없어 결정적·테스트 가능.
 
 ### 3. 페이지 채우기 (agentic seed)
 
@@ -271,7 +308,9 @@ python -m scripts.update_wiki query \
 |---|---|
 | LLM 연결 검증 | `python -m scripts.llm_client --probe [--all]` |
 | LLM 오프라인 검증 | `python -m scripts.llm_client --selftest` |
-| Stub 페이지 일괄 생성 | `bash scripts/seed_pages.sh [--dry-run] [--force] [--per-file]` |
+| Stub 페이지 일괄 생성 (entity) | `bash scripts/seed_pages.sh [--dry-run] [--force] [--per-file]` |
+| **Layout 제안** (subsystem/concept) | `python -m scripts.propose_layout --tree raw/<top> --model M [--max-turns N]` |
+| **Layout 적용** (YAML → stub) | `python -m scripts.apply_layout PROPOSAL.yaml [--dry-run] [--force]` |
 | **페이지 시드 (agentic)** | `python -m scripts.update_wiki seed-agent --page P --model M [--max-turns N] [--overwrite]` |
 | **페이지 시드 batch** | `python -m scripts.seed_all --model M [--filter GLOB] [--exclude GLOB ...] [--force] [--continue] [--dry-run]` |
 | **Sub-tree 매니페스트** | `python -m scripts.sync_subtree --tree raw/<top> [--remote R] [--branch B] [--no-fetch] [--record] [--out r.json]` |
@@ -336,7 +375,9 @@ wiki/                   # LLM 페이지
   queries/              # 사람의 질의 산출물 + _templates/
   _meta/                # coverage.json, todo.md
 scripts/                # 도구
-  seed_pages.sh         # stub 일괄 생성
+  seed_pages.sh         # entity stub 일괄 생성 (.c+.h 짝)
+  propose_layout.py     # subsystem/concept YAML 제안 (LLM)
+  apply_layout.py       # 제안 YAML → stub + coverage 병합 (결정적)
   update_wiki.py        # seed-agent / update / query
   anneal.py             # 주기 수리
   patch_router.py       # diff → 영향 페이지
