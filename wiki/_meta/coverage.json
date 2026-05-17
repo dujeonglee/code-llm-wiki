@@ -1,5 +1,271 @@
 {
   "pages": {
+    "raw/pcie_scsc/_concept_fapi.md": {
+      "covers": [
+        "pcie_scsc/fapi.h"
+      ],
+      "kind": "concept",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_concept_load_balance.md": {
+      "covers": [
+        "pcie_scsc/load_manager.c",
+        "pcie_scsc/load_manager.h"
+      ],
+      "kind": "concept",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_concept_lpc.md": {
+      "covers": [
+        "pcie_scsc/local_packet_capture.c",
+        "pcie_scsc/local_packet_capture.h"
+      ],
+      "kind": "concept",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_concept_tas.md": {
+      "covers": [
+        "pcie_scsc/dctas.c",
+        "pcie_scsc/dctas.h"
+      ],
+      "kind": "concept",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_concept_vif_peer.md": {
+      "covers": [
+        "pcie_scsc/dev.h",
+        "pcie_scsc/const.h"
+      ],
+      "kind": "concept",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_debug_diagnostics.md": {
+      "covers": [
+        "pcie_scsc/debug.c",
+        "pcie_scsc/debug.h",
+        "pcie_scsc/debug_frame.c",
+        "pcie_scsc/log_clients.c",
+        "pcie_scsc/log_clients.h",
+        "pcie_scsc/log2us.c",
+        "pcie_scsc/log2us.h",
+        "pcie_scsc/fw_test.c",
+        "pcie_scsc/fw_test.h",
+        "pcie_scsc/slsi_tracepoint_debug.c",
+        "pcie_scsc/slsi_tracepoint_debug.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_device_lifecycle.md": {
+      "covers": [
+        "pcie_scsc/dev.c",
+        "pcie_scsc/dev.h",
+        "pcie_scsc/cm_if.c",
+        "pcie_scsc/scsc_wifi_cm_if.h",
+        "pcie_scsc/mgt.c",
+        "pcie_scsc/mgt.h",
+        "pcie_scsc/hanged_record.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_hip_transport.md": {
+      "covers": [
+        "pcie_scsc/hip.c",
+        "pcie_scsc/hip.h",
+        "pcie_scsc/hip_bh.h",
+        "pcie_scsc/hip4.c",
+        "pcie_scsc/hip4.h",
+        "pcie_scsc/hip5.c",
+        "pcie_scsc/hip5.h",
+        "pcie_scsc/hip4_sampler.c",
+        "pcie_scsc/hip4_sampler.h",
+        "pcie_scsc/hip4_smapper.c",
+        "pcie_scsc/hip4_smapper.h",
+        "pcie_scsc/mbulk.c",
+        "pcie_scsc/mbulk.h",
+        "pcie_scsc/mbulk_def.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_mib_subsystem.md": {
+      "covers": [
+        "pcie_scsc/mib.c",
+        "pcie_scsc/mib.h",
+        "pcie_scsc/mib_text_convert.c",
+        "pcie_scsc/mib_text_convert.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_mlme_overview.md": {
+      "covers": [
+        "pcie_scsc/mlme.c",
+        "pcie_scsc/mlme.h",
+        "pcie_scsc/mlme_nan.c",
+        "pcie_scsc/sap_mlme.c",
+        "pcie_scsc/sap_mlme.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_netdev_vif.md": {
+      "covers": [
+        "pcie_scsc/netif.c",
+        "pcie_scsc/netif.h",
+        "pcie_scsc/if_vif.c",
+        "pcie_scsc/cfg80211_ops.c",
+        "pcie_scsc/cfg80211_ops.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_platform_glue.md": {
+      "covers": [
+        "pcie_scsc/osal/slsi_wakelock.h",
+        "pcie_scsc/panel_notifier.c",
+        "pcie_scsc/panel_notifier.h",
+        "pcie_scsc/ril_notifier.c",
+        "pcie_scsc/ril_notifier.h",
+        "pcie_scsc/slsi_cpuhp_monitor.c",
+        "pcie_scsc/slsi_cpuhp_monitor.h",
+        "pcie_scsc/porting_imx.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_regulatory.md": {
+      "covers": [
+        "pcie_scsc/reg_info.c",
+        "pcie_scsc/reg_info.h",
+        "pcie_scsc/channels.h",
+        "pcie_scsc/cac.c",
+        "pcie_scsc/cac.h",
+        "pcie_scsc/conc_modes.c"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_rx_data_plane.md": {
+      "covers": [
+        "pcie_scsc/rx.c",
+        "pcie_scsc/ba.c",
+        "pcie_scsc/ba.h",
+        "pcie_scsc/ba_replay.c",
+        "pcie_scsc/sap_ma.c",
+        "pcie_scsc/sap_ma.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_sap_layer.md": {
+      "covers": [
+        "pcie_scsc/sap.h",
+        "pcie_scsc/sap_mlme.c",
+        "pcie_scsc/sap_mlme.h",
+        "pcie_scsc/sap_ma.c",
+        "pcie_scsc/sap_ma.h",
+        "pcie_scsc/sap_dbg.c",
+        "pcie_scsc/sap_dbg.h",
+        "pcie_scsc/sap_test.c",
+        "pcie_scsc/sap_test.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_tx_data_plane.md": {
+      "covers": [
+        "pcie_scsc/tx.c",
+        "pcie_scsc/tx.h",
+        "pcie_scsc/tx_api.h",
+        "pcie_scsc/txbp.c",
+        "pcie_scsc/txbp.h",
+        "pcie_scsc/scsc_wifi_fcq.c",
+        "pcie_scsc/scsc_wifi_fcq.h",
+        "pcie_scsc/traffic_monitor.c",
+        "pcie_scsc/traffic_monitor.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_user_ifaces.md": {
+      "covers": [
+        "pcie_scsc/procfs.c",
+        "pcie_scsc/procfs.h",
+        "pcie_scsc/ioctl.c",
+        "pcie_scsc/ioctl.h",
+        "pcie_scsc/udi.c",
+        "pcie_scsc/udi.h",
+        "pcie_scsc/unifiio.h",
+        "pcie_scsc/scsc_wlan_mmap.c",
+        "pcie_scsc/scsc_wlan_mmap.h",
+        "pcie_scsc/dpd_mmap.c",
+        "pcie_scsc/dpd_mmap.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_vendor_nl80211.md": {
+      "covers": [
+        "pcie_scsc/nl80211_vendor.c",
+        "pcie_scsc/nl80211_vendor.h",
+        "pcie_scsc/nl80211_vendor_nan.c",
+        "pcie_scsc/nl80211_vendor_nan.h",
+        "pcie_scsc/lls.c",
+        "pcie_scsc/lls.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
+    "raw/pcie_scsc/_wifi_logger.md": {
+      "covers": [
+        "pcie_scsc/scsc_wifilogger.h",
+        "pcie_scsc/scsc_wifilogger_api.c",
+        "pcie_scsc/scsc_wifilogger_core.c",
+        "pcie_scsc/scsc_wifilogger_core.h",
+        "pcie_scsc/scsc_wifilogger_internal.c",
+        "pcie_scsc/scsc_wifilogger_internal.h",
+        "pcie_scsc/scsc_wifilogger_module.c",
+        "pcie_scsc/scsc_wifilogger_module.h",
+        "pcie_scsc/scsc_wifilogger_debugfs.c",
+        "pcie_scsc/scsc_wifilogger_debugfs.h",
+        "pcie_scsc/scsc_wifilogger_rings.h",
+        "pcie_scsc/scsc_wifilogger_types.h",
+        "pcie_scsc/scsc_wifilogger_ring_connectivity.c",
+        "pcie_scsc/scsc_wifilogger_ring_connectivity.h",
+        "pcie_scsc/scsc_wifilogger_ring_connectivity_api.h",
+        "pcie_scsc/scsc_wifilogger_ring_pktfate.c",
+        "pcie_scsc/scsc_wifilogger_ring_pktfate.h",
+        "pcie_scsc/scsc_wifilogger_ring_pktfate_api.h",
+        "pcie_scsc/scsc_wifilogger_ring_wakelock.c",
+        "pcie_scsc/scsc_wifilogger_ring_wakelock.h",
+        "pcie_scsc/scsc_wifilogger_ring_wakelock_api.h",
+        "pcie_scsc/scsc_wifilogger_ring_test.c",
+        "pcie_scsc/scsc_wifilogger_ring_test.h"
+      ],
+      "kind": "subsystem",
+      "last_synced": null,
+      "last_synced_sha": null
+    },
     "raw/pcie_scsc/acm_api.md": {
       "covers": [
         "pcie_scsc/acm_api.c"
