@@ -22,46 +22,58 @@ flowchart TD
     stub_entity["wiki/raw/&lt;top&gt;/&lt;file&gt;.md<br/>entity stub (.c+.h)"]
     stub_arch["wiki/raw/&lt;top&gt;/_*.md<br/>subsystem/concept stub"]
     filled["wiki/raw/&lt;top&gt;/*.md<br/>filled (body written)"]
-    cov[("wiki/_meta/coverage.json")]
+    cov[("wiki/_meta/coverage.json<br/>routing index<br/>covers + last_synced")]
     queries["wiki/queries/*.md<br/>audit trail"]
     site["site/*.html<br/>file://"]
 
     upstream -. "git clone / pull" .-> raw
 
-    raw -->|"(1a) scripts/seed_pages.sh<br/>deterministic .c+.h grouping"| stub_entity
-    raw -->|"(1b) propose_layout<br/>claude-agent-sdk · Read/Grep"| proposal
-    proposal -->|"human review +<br/>(1c) apply_layout<br/>deterministic stub writer"| stub_arch
+    raw -->|"(1a) scripts/seed_pages.sh"| stub_entity
+    raw -->|"(1b) propose_layout"| proposal
+    proposal -->|"human review +<br/>(1c) apply_layout"| stub_arch
 
-    stub_entity --> cov
-    stub_arch --> cov
+    stub_entity -->|"register covers"| cov
+    stub_arch   -->|"register covers"| cov
 
-    stub_entity -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
-    stub_arch   -->|"(2) update_wiki seed-agent<br/>claude-agent-sdk · Read/Grep"| filled
+    stub_entity -->|"(2) seed-agent"| filled
+    stub_arch   -->|"(2) seed-agent"| filled
+    filled -->|"update last_synced/sha"| cov
 
-    raw -->|"(3) sync_subtree → patch_router (cov 사용)<br/>→ update_wiki update<br/>llm_client (one-shot HTTP)"| filled
+    raw --> diff["changed files manifest<br/>(sync_subtree)"]
+    cov -. "read: covers → pages" .-> diff
+    diff -->|"(3) patch_router → update_wiki update"| filled
 
-    filled -->|"(4) anneal.py (cron)<br/>stale / broken-link / drift 수리"| filled
+    cov -. "read: stale / drift" .-> anneal{{"(4) anneal (cron)"}}
+    anneal -->|"repair"| filled
 
-    filled -.->|"(5) update_wiki query<br/>code-review / porting / feature-impl"| queries
+    cov -. "read: filled / total" .-> batch{{"seed_all batch /<br/>seed_progress"}}
+    batch -. "drives" .-> filled
 
+    filled -.->|"(5) query<br/>code-review / porting / feature-impl"| queries
     filled -->|"build_site.py · mkdocs"| site
 
     classDef immutable fill:#fef3c7,stroke:#a16207,color:#000
     classDef llm fill:#dbeafe,stroke:#1e40af,color:#000
     classDef review fill:#fce7f3,stroke:#9d174d,color:#000
+    classDef hub fill:#fde68a,stroke:#b45309,color:#000,stroke-width:3px
+    classDef tool fill:#e0e7ff,stroke:#3730a3,color:#000
     classDef artifact fill:#dcfce7,stroke:#15803d,color:#000
 
     class upstream,raw immutable
-    class stub_entity,stub_arch,filled,cov,queries llm
+    class stub_entity,stub_arch,filled,queries llm
+    class cov hub
     class proposal review
+    class diff,anneal,batch tool
     class site artifact
 ```
 
+- **진노랑 (굵은 테두리)** — `coverage.json`. 페이지 ↔ 소스 파일 매핑의 단일 진실 + 신선도 ledger. 거의 모든 도구가 여기를 읽거나 씀.
 - **노란색** — 사용자 소유, 불변.
 - **분홍색** — LLM 제안, 사람 리뷰 게이트 (apply 전 편집 가능).
-- **파란색** — LLM이 만들고 유지하는 파일들. wiki repo의 일부.
+- **파란색** — LLM이 만들고 유지하는 페이지.
+- **연보라** — 중간 산출물 / 도구 노드 (manifest, annealer, batch).
 - **초록색** — 빌드 산출물 (gitignored).
-- 점선 — 1회성 / 비주기 이벤트 (clone, query). 실선 — 자동화에 자주 등장하는 흐름.
+- 점선 = 읽기, 실선 = 쓰기 / 데이터 흐름. cov로 들어오는 실선이 라우팅 인덱스를 채우고, 나가는 점선이 그걸 소비.
 
 **페이지 stub 두 갈래** (1a vs 1b+1c)
 - `entity` — 한 translation unit (`.c`+`.h`)에 1:1 대응. 결정적이므로 `seed_pages.sh`가 바로 만든다.
